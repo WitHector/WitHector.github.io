@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>Makefile详解</title>
+    <link href="/2022/09/21/Makefile%E5%B8%B8%E7%94%A8%E5%A5%97%E8%B7%AF/"/>
+    <url>/2022/09/21/Makefile%E5%B8%B8%E7%94%A8%E5%A5%97%E8%B7%AF/</url>
+    
+    <content type="html"><![CDATA[<h3 id="Makefile-简介"><a href="#Makefile-简介" class="headerlink" title="Makefile 简介"></a>Makefile 简介</h3><ul><li>Makefile作用：<strong>记录依赖关系和编译规则；</strong></li><li>Makefile三要素：<strong>目标、依赖、命令</strong></li><li>Makefile基本格式：<br>  目标：依赖的文件或者其他目标<br>  &lt;tab&gt;命令1<br>  &lt;tab&gt;命令2<br>  …</li><li>设置伪目标：.PHONY: clean</li><li>指定Makefile文件：make -f Makefile2</li></ul><h3 id="Makefile变量及模式规则"><a href="#Makefile变量及模式规则" class="headerlink" title="Makefile变量及模式规则"></a>Makefile变量及模式规则</h3><ul><li>自定义变量</li></ul><table><thead><tr><th align="center">符号</th><th align="center">含义</th></tr></thead><tbody><tr><td align="center">&#x3D;</td><td align="center">延时赋值（调用时赋值）</td></tr><tr><td align="center">:&#x3D;</td><td align="center">立即赋值</td></tr><tr><td align="center">?&#x3D;</td><td align="center">空赋值（变量为空时赋值）</td></tr><tr><td align="center">+&#x3D;</td><td align="center">追加赋值（不覆盖原值，在后面追加）</td></tr></tbody></table><ul><li><p>自动化变量</p><ol><li>$&lt; 第一个依赖文件</li><li>$^ 所有的依赖文件</li><li>$@ 目标文件</li></ol></li><li><p>模式匹配：%匹配任意多个非空字符</p></li><li><p>默认规则：.o文件默认.c文件编译</p></li></ul><h3 id="Makefile条件分支"><a href="#Makefile条件分支" class="headerlink" title="Makefile条件分支"></a>Makefile条件分支</h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-keyword">ifeq</span>(var1,var2)       |         <span class="hljs-keyword">ifneq</span>(var1,var2)<br>    ...               |             ...<br><span class="hljs-keyword">else</span>                  |         <span class="hljs-keyword">else</span><br>    ...               |             ...<br><span class="hljs-keyword">endif</span>                 |         <span class="hljs-keyword">endif</span> <br></code></pre></td></tr></table></figure><h3 id="Makefile常用函数"><a href="#Makefile常用函数" class="headerlink" title="Makefile常用函数"></a>Makefile常用函数</h3><ul><li>patsubst(模式替换函数): <code>$&#123;patsubst pattern, replace_pattern, text&#125;</code> %作通配符</li><li>notdir(取文件名函数): <code>$&#123;notdir .../.../name&#125;</code>去掉目录部分只取文件名</li><li>wildcard(取匹配文件名函数)：<code>$&#123;wildcard pattern&#125;</code>取当前目录下所有符合pattern模式的文件名，*作通配符</li><li>foreach(遍历函数)：<code>$&#123;foreach var, list, text&#125;</code>将list中每一个单词赋值给var,然后在text中使用var</li></ul><h3 id="编写Makefile"><a href="#编写Makefile" class="headerlink" title="编写Makefile"></a>编写Makefile</h3><ul><li>创建目录用于存储编译过程中生成的文件：BUILD_DIR</li><li>源文件目录（存放.c及.s后缀文件）：SRC_DIR</li><li>头文件目录（存放.h文件）：INC_DIR</li><li>搜索路径关键字：VPATH</li><li>编译器头文件路径：CFLAGS -I + 头文件路径</li></ul><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-keyword">ifeq</span> ($&#123;ARCH&#125;,x86)   //判断当前编译环境 win上编译命令：make ARCH=x86<br>CC = gcc<br><span class="hljs-keyword">else</span><br>CC = arm-linux-gnuenbihf-gcc<br><span class="hljs-keyword">endif</span><br><br>TARGET = output     //输出可执行文件名<br>BUILD_DIR = build   //生成文件储存目录<br>SRC_DIR = .         //源文件存储于当前面目录<br>INC_DIR = .         //头文件存储与当前目录<br><br>SOURCES_C = $&#123;foreach dir,$&#123;SRC_DIR&#125;,$&#123;wildcard $&#123;dir&#125;/*.c&#125;&#125;   //所有.c文件路径<br>SOURCES_S = $&#123;foreach dir,$&#123;SRC_DIR&#125;,$&#123;wildcard $&#123;dir&#125;/*.s&#125;&#125;   //所有.s文件路径<br>INCLUDES = $&#123;foreach dir,$&#123;INC_DIR&#125;,$&#123;wildcard $&#123;dir&#125;/*.h&#125;&#125;    //所有头文件路径<br>OBJS = $&#123;patsubst %.c,$&#123;BUILD_DIR&#125;/%.o,$&#123;notdir $&#123;SOURCES_C&#125;&#125;&#125; //.c文件生成的.o文件名<br>OBJS += $&#123;patsubst %.s,$&#123;BUILD_DIR&#125;/%.o,$&#123;notdir $&#123;SOURCES_C&#125;&#125;&#125; //.s文件生成的.o文件名<br>VPATH = $&#123;SRC_DIR&#125;   //编译器搜索路径为源文件路径<br>CFLAGS = $&#123;patsubst %,-I%,$&#123;INC_DIR&#125;&#125;  //编译器头文件路径<br><br><span class="hljs-section">$&#123;BUILD_DIR&#125;/$&#123;TARGET&#125;:$&#123;OBJS&#125;</span><br>$&#123;CC&#125; <span class="hljs-variable">$^</span> -o <span class="hljs-variable">$@</span> $&#123;CFLAGS&#125;<br><br><span class="hljs-section">$&#123;BUILD_DIR&#125;/%.o:%.c $&#123;INCLUDES&#125; | create_build</span><br>$&#123;CC&#125; -c <span class="hljs-variable">$&lt;</span> -o <span class="hljs-variable">$@</span> $&#123;CFLAGS&#125;<br><br><span class="hljs-meta"><span class="hljs-keyword">.PHONY</span>:clean create_build  //伪目标</span><br><br><span class="hljs-section">clean:                     //make clean时执行清除rm命令</span><br>rm -r $&#123;BUILD_DIR&#125;<br><br><br><span class="hljs-section">create_build:             //创建build目录</span><br>mkdir -p $&#123;BUILD_DIR&#125;<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>Linux</category>
+      
+      <category>Makefile</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Makefile</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MarkDown基本语法</title>
     <link href="/2022/09/21/markdown%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/"/>
     <url>/2022/09/21/markdown%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/</url>
