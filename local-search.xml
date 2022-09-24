@@ -121,9 +121,9 @@
     
     <tags>
       
-      <tag>Linux_driver</tag>
-      
       <tag>字符设备</tag>
+      
+      <tag>linux_driver</tag>
       
     </tags>
     
