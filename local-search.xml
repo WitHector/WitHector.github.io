@@ -5,11 +5,19 @@
   
   <entry>
     <title>linux并发与竞争</title>
-    <link href="/2022/09/28/linux%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89/"/>
-    <url>/2022/09/28/linux%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89/</url>
+    <link href="/2022/10/02/linux%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89/"/>
+    <url>/2022/10/02/linux%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89/</url>
     
-    <content type="html"><![CDATA[]]></content>
+    <content type="html"><![CDATA[<div align="center"><h3 id="并发与竞争简介"><a href="#并发与竞争简介" class="headerlink" title="并发与竞争简介"></a>并发与竞争简介</h3></div><blockquote><p>多任务同时访问同一片内存区域，这些任务可能会相会覆盖内存中的数据，造成内存读写混乱<br>linux系统产生并发的原因：</p></blockquote><ol><li>多线程并发访问</li><li>抢占式并发访问</li><li>中断程序并发访问</li><li>SMP(多核)核间并发访问</li></ol><p><strong>临界区</strong> ：共享数据段<br>保证同一时刻只能有一个任务访问临界区资源</p><h4 id="原子操作（一般用于整型变量或者位操作）"><a href="#原子操作（一般用于整型变量或者位操作）" class="headerlink" title="原子操作（一般用于整型变量或者位操作）"></a>原子操作（一般用于整型变量或者位操作）</h4><ol><li><p>原子变量定义,在使用原子操作时，用原子变量代替整型变量</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span></span><br><span class="hljs-class">&#123;</span><br>    <span class="hljs-type">int</span> counter;<br>&#125;<span class="hljs-type">atomic_t</span>;<br></code></pre></td></tr></table></figure><p><code>atomic_t a;  //定义原子变量</code><br><code>atomic_t b = ATOMIC_INIT(0) //定义原子变量b的同时将其初始化为0</code></p></li><li><p>整型原子操作API函数</p><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">定义时赋初值i</td><td align="center">atomic_t a &#x3D; ATOMIC_INIT(i)</td></tr><tr><td align="center">读取原子变量v的值</td><td align="center">int atomic_read(atomic_t *v)</td></tr><tr><td align="center">向原子变量v写入数据i</td><td align="center">void atomic_set(atomic_t *v, int i)</td></tr><tr><td align="center">原子变量v加上i</td><td align="center">void atomic_add(int i, atomic_t *v)</td></tr><tr><td align="center">原子变量v减去i</td><td align="center">void atomic_sub(int i, atomic_t *v)</td></tr><tr><td align="center">原子变量v自增</td><td align="center">void atomic_inc(atomic_t *v)</td></tr><tr><td align="center">原子变量v自减</td><td align="center">void atomic_dec(atomic_t *v)</td></tr><tr><td align="center">从v减1并返回v的值</td><td align="center">int atomic_dec_return(atomic_t *v)</td></tr><tr><td align="center">从v加1并返回v的值</td><td align="center">int atomic_inc_return(atomic_t *v)</td></tr></tbody></table><blockquote><p>上述API函数针对32位系统，若在64位系统中使用原子变量，上述函数前缀由atomic_改为atomic64_，返回值由int改为long long</p></blockquote></li><li><p>原子位操作API函数(直接对内存操作)</p><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">将p地址的第nr位置1</td><td align="center">void set_bit(int nr, void *p)</td></tr><tr><td align="center">将p地址的第nr位置0</td><td align="center">void clear_bit(int nr, void *p)</td></tr><tr><td align="center">将p地址的第nr位翻转</td><td align="center">void chang_bit(int nr, void *p)</td></tr><tr><td align="center">获取p地址第nr位的值</td><td align="center">int test_bit(int nr, void *p)</td></tr></tbody></table></li></ol><h4 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h4><blockquote><p>保证同一资源同时只能被一个任务访问，若其他线程获取锁失败，原地自旋（不断查询锁状态），等待锁可用。其缺点在于自旋状态会浪费处理器资源，降低系统性能，因此自旋锁持有时间不能太长。<br>linux内核使用spinlock_t表示自旋锁类型 spinlock_t lock;</p></blockquote><ul><li>多线程中自旋锁API函数<table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">定义并初始化自旋锁变量（宏）</td><td align="center">DEFINE_SPINLOCK(spinlock_t lock)</td></tr><tr><td align="center">初始化自旋锁</td><td align="center">int spin_lock_init(spinlock_t *lock)</td></tr><tr><td align="center">获取指定的自旋锁(上锁，不推荐使用)</td><td align="center">void spin_lock(spinlock_t *lock)</td></tr><tr><td align="center">释放指定的自旋锁(开锁，不推荐使用)</td><td align="center">void spin_unlock(spinlock_t *lock)</td></tr><tr><td align="center">尝试获取指定自旋锁，获取失败返回0</td><td align="center">int spin_trylock(spinlock_t *lock)</td></tr><tr><td align="center">检查指定自旋锁是否被获取，已获取返回0</td><td align="center">int spin_is_locked(spinlock_t *lock)</td></tr></tbody></table><blockquote><p>以上API函数用于线程与线程之间的并发访问，由自旋锁保护的临界区之中一定调用任何能够引起系统阻塞或者睡眠的函数，否则可能发生死锁现象。</p></blockquote></li><li>涉及到中断的自旋锁API函数<blockquote><p>在中断中可以使用自旋锁，但是在获取锁之前必须关闭本地中断，否则可能出现死锁现象。</p></blockquote><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">禁止本地中断并获取自旋锁</td><td align="center">void spin_lock_irq(spinlock_t *lock)</td></tr><tr><td align="center">激活本地中断并释放自旋锁</td><td align="center">void spin_unlock_irq(spinlock_t *lock)</td></tr><tr><td align="center">保存中断状态，禁止本地中断，获取自旋锁</td><td align="center">void spin_lock_irqsave(spinlock_t *lock, unsigned long flas)</td></tr><tr><td align="center">恢复中断状态，激活本地中断，释放自旋锁</td><td align="center">void spin_unlock_irqstore(spinlock_t *lock, unsigned long flags)</td></tr></tbody></table><blockquote><p>在涉及到中断的程序中，使用自旋锁时，建议在线程中使用spin_lock_irqsave和spin_unlock_irqstore函数，在中断服务函数中使用spin_lock_irq和spin_unlock_irq函数。</p></blockquote></li><li>使用自旋锁的注意事项<ul><li>自旋锁自旋时间要短，否则会降低系统性能。如果临界区资源较大，运行时间较长，要考虑其他的并发处理方式。</li><li>自旋锁保护的临界区不能使用任何可能导致系统休眠的函数，负责可能产生死锁现象</li><li>不能递归申请自旋</li><li>考虑驱动程序的可移植性，无论多核还是单核，都将其视作多核CPU编写驱动代码</li></ul></li></ul><h4 id="其他内核中常用的锁"><a href="#其他内核中常用的锁" class="headerlink" title="其他内核中常用的锁"></a>其他内核中常用的锁</h4><ol><li>读写自旋锁<blockquote><p>读写自旋锁为读操作和写操作提供不同的锁。一次只允许一个写操作，也就是同一时间只允许一个线程持有写锁，且不能进行读操作；但是当没有写操作时，允许一个或多个线程持有读锁，允许并发执行读操作。</p></blockquote></li></ol><ul><li><p>linux内核使用rwlock_t表示读写锁类型</p><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">定义并初始化读写锁</td><td align="center">DEFINE_RWLOCK(rwlock_t lock)</td></tr><tr><td align="center">初始化读写锁</td><td align="center">void rwlock_init(rwlock_t *lock)</td></tr><tr><td align="center">获取读锁</td><td align="center">void read_lock(rwlock_t *lock)</td></tr><tr><td align="center">释放读锁</td><td align="center">void read_unlock(rwlock_t *lock)</td></tr><tr><td align="center">禁止本地中断并获取读锁</td><td align="center">void read_lock_irq(rwlock_t *lock)</td></tr><tr><td align="center">打开本地中断并释放读锁</td><td align="center">void read_unlock_irq(rwlock_t *lock)</td></tr><tr><td align="center">获取写锁</td><td align="center">void write_lock(rwlock_t *lock)</td></tr><tr><td align="center">释放写锁</td><td align="center">void write_unlock(rwlock_t *lock)</td></tr><tr><td align="center">禁止本地中断获取写锁</td><td align="center">void write_lock_irq(rwlock_t *lock)</td></tr><tr><td align="center">打开本地中断释放写锁</td><td align="center">void write_unlock_irq(rwlock_t *lock)</td></tr></tbody></table></li></ul><h4 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h4><blockquote><p>获取资源信号量加一 释放资源信号量减一<br>与自旋锁不同 信号量使线程休眠 且进入休眠状态后会切换线程</p></blockquote><ul><li>使用信号量的注意事项<ul><li>信号量使线程进入休眠状态，因此适合占用临界区资源较久的情景</li><li>信号量不能用于中断中，因为信号量会引起休眠，中断不能休眠</li><li>临界区资源持有时间较短不适合使用信号量，因为频繁进入休眠切换线程造成的资源开销远大于休眠节省的资源</li></ul></li><li>信号量原型<ul><li>Linux中使用semaphore结构体表示信号量<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">semaphore</span>&#123;</span><br>   <span class="hljs-type">raw_spinlock_t</span> lock;<br>   <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count;<br>   <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">wait_list</span>;</span><br>&#125;;<br></code></pre></td></tr></table></figure></li></ul></li><li>信号量API函数</li></ul><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">定义一个信号量并设置其值为1</td><td align="center">DEFINE_SEMAPHORE(name)</td></tr><tr><td align="center">初始化信号量并设置信号量的值</td><td align="center">void sema_init(struct semaphore *sem, int val)</td></tr><tr><td align="center">获取信号量，获取失败进入休眠,不能在中断中使用，且使用此函数进入休眠后不能被信号打断</td><td align="center">void down(struct semaphore *sem)</td></tr><tr><td align="center">尝试获取信号量，获取成功返回0;获取失败不会进入休眠</td><td align="center">int down_trylock(struct semaphore *sem)</td></tr><tr><td align="center">获取信号量，与down类似，此函数进入休眠后可以被信号打断</td><td align="center">void down_interruptible(struct semaphore *sem)</td></tr><tr><td align="center">释放信号量 值加一</td><td align="center">void up(struct semaphore *sem)</td></tr></tbody></table><ul><li>示例代码：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">semaphore</span> <span class="hljs-title">sem</span>;</span>   <span class="hljs-comment">//定义信号量</span><br>sem_init(&amp;sem, <span class="hljs-number">1</span>);      <span class="hljs-comment">//初始化信号量</span><br>down(&amp;sem);             <span class="hljs-comment">//获取信号量</span><br><span class="hljs-comment">/* 临界区 */</span><br>up(&amp;sem);               <span class="hljs-comment">//释放信号量</span><br></code></pre></td></tr></table></figure></li></ul><h4 id="互斥体"><a href="#互斥体" class="headerlink" title="互斥体"></a>互斥体</h4><blockquote><p>驱动中使用互斥的地方建议使用互斥体而非二值信号量</p></blockquote><ul><li><p>互斥体原型<br>struct mutex{<br>   atomic_t count;<br>   spinlock_t wait_lock;<br>};</p></li><li><p>互斥体注意事项</p><ul><li>mutex同样导致系统休眠，不能在中断中使用</li><li>临界区可以调用引起阻塞的API函数</li><li>一次只能有一个线程持有mutex,必须由mutex的持有者释放，不能递归上锁和释放</li></ul></li><li><p>互斥体API函数</p><table><thead><tr><th align="center">函数描述</th><th align="center">函数</th></tr></thead><tbody><tr><td align="center">定义并初始化mutex变量</td><td align="center">DEFINE_MUTEX(name)</td></tr><tr><td align="center">初始化mutex</td><td align="center">void mutex_init(struct mutex *lock)</td></tr><tr><td align="center">获取mutex，上锁，获取失败进入休眠</td><td align="center">void mutex_lock(struct mutex *lock)</td></tr><tr><td align="center">释放mutex</td><td align="center">void mutex_ulock(struct mutex *lock)</td></tr><tr><td align="center">尝试获取Mutex，成功返回1 失败返回0</td><td align="center">int mutex_try_lock(struct mutex *lock)</td></tr><tr><td align="center">判断mutex是否被获取，是-1 否-0</td><td align="center">int mutex_is_locked(struct mutex *lock)</td></tr><tr><td align="center">mutex上锁，使用此函数进入休眠后可以被信号打断</td><td align="center">void mutex_lock_interruptible(struct mutex *lock)</td></tr></tbody></table><ul><li>示例代码<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mutex</span> <span class="hljs-title">lock</span>;</span>   <span class="hljs-comment">//定义一个互斥体</span><br>mutex_init(&amp;lock);   <span class="hljs-comment">//初始化互斥体</span><br>mutex_lock(&amp;lock);   <span class="hljs-comment">//上锁</span><br><span class="hljs-comment">/* 临界区 */</span><br>mutex_unlock(&amp;lock);<br></code></pre></td></tr></table></figure></li></ul><!--PC版--></li></ul><div id="SOHUCS" ></div><script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script><script type="text/javascript">window.changyan.api.config({appid: 'cywhVLBNm',conf: 'prod_449188a899f144a2be2e05b0a1b8f390'});</script>]]></content>
     
+    
+    <categories>
+      
+      <category>Linux</category>
+      
+      <category>Drivers</category>
+      
+    </categories>
     
     
   </entry>
@@ -35,16 +43,6 @@
     </categories>
     
     
-    <tags>
-      
-      <tag>linux_driver</tag>
-      
-      <tag>pinctrl</tag>
-      
-      <tag>gpio</tag>
-      
-    </tags>
-    
   </entry>
   
   
@@ -67,16 +65,6 @@
       
     </categories>
     
-    
-    <tags>
-      
-      <tag>linux_driver</tag>
-      
-      <tag>pinctrl</tag>
-      
-      <tag>gpio</tag>
-      
-    </tags>
     
   </entry>
   
@@ -101,14 +89,6 @@
     </categories>
     
     
-    <tags>
-      
-      <tag>linux_driver</tag>
-      
-      <tag>设备树</tag>
-      
-    </tags>
-    
   </entry>
   
   
@@ -132,14 +112,6 @@
     </categories>
     
     
-    <tags>
-      
-      <tag>linux_driver</tag>
-      
-      <tag>字符设备</tag>
-      
-    </tags>
-    
   </entry>
   
   
@@ -161,12 +133,6 @@
     </categories>
     
     
-    <tags>
-      
-      <tag>Makefile</tag>
-      
-    </tags>
-    
   </entry>
   
   
@@ -187,12 +153,6 @@
       
     </categories>
     
-    
-    <tags>
-      
-      <tag>MarkDown</tag>
-      
-    </tags>
     
   </entry>
   
