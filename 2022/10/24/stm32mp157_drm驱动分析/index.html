@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Hector">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="分析正点原子stm32mp157开发板源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32mp157_drm驱动源码分析">
+<meta property="og:url" content="http://example.com/2022/10/24/stm32mp157_drm%E9%A9%B1%E5%8A%A8%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hector&#39;s Blog Page">
+<meta property="og:description" content="分析正点原子stm32mp157开发板源码">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-24T11:50:23.000Z">
+<meta property="article:modified_time" content="2022-11-01T15:20:08.218Z">
+<meta property="article:author" content="Hector">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>stm32mp157_drm驱动源码分析 - Hector&#39;s Blog Page</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Hector</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">stm32mp157_drm驱动源码分析</span>
+          
+        </div>
+
+      </br>
+      </br>
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-10-24 19:50" pubdate>
+          2022年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          88 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div> 
+</div>
+
+
+
+</div>
+
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">stm32mp157_drm驱动源码分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <div align="center">
+### stm32mp157_drm驱动源码分析
+
+</div>
+
+
+<blockquote>
+<p>stm32mp1系列出厂SDK中自带LTDC接口驱动，用于连接RGB LCD，对其驱动源码分析如下。</p>
+</blockquote>
+<ol>
+<li><p>从其设备树文件中找出LTDC对应的节点：&lt;arch&#x2F;arm&#x2F;boot&#x2F;dts&#x2F;stm32mp151.dtsi&gt;，stm32mp1系列共有的LTDC节点：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">ltdc:</span> <span class="hljs-title class_">display-controller@5a001000</span> <span class="hljs-punctuation">&#123;</span> <br> <span class="hljs-attr">compatible</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;st,stm32-ltdc&quot;</span><span class="hljs-punctuation">;</span> <br> <span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">0x5a001000</span> <span class="hljs-number">0x400</span>&gt;</span><span class="hljs-punctuation">;</span> <br> <span class="hljs-attr">interrupts</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;GIC_SPI <span class="hljs-number">88</span> IRQ_TYPE_LEVEL_HIGH&gt;</span>, <br>             <span class="hljs-params">&lt;GIC_SPI <span class="hljs-number">89</span> IRQ_TYPE_LEVEL_HIGH&gt;</span><span class="hljs-punctuation">;</span><br> <span class="hljs-attr">clocks</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;rcc</span> LTDC_PX&gt;</span><span class="hljs-punctuation">;</span><br> <span class="hljs-attr">clock-names</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;lcd&quot;</span><span class="hljs-punctuation">;</span><br> <span class="hljs-attr">resets</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;rcc</span> LTDC_R&gt;</span><span class="hljs-punctuation">;</span> <span class="hljs-number">1660</span> <span class="hljs-attr">status</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;disabled&quot;</span><span class="hljs-punctuation">;</span> <span class="hljs-number">1661</span> <span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure>
+<ul>
+<li>compatible属性：”st,stm32-ltdc”,在源码中检索此字符串，找到驱动源码</li>
+</ul>
+</li>
+<li><p>DRM驱动源码：&lt;drivers&#x2F;gpu&#x2F;drm&#x2F;stm&#x2F;drv.c&gt;</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">of_device_id</span> <span class="hljs-title">drv_dt_ids</span>[] =</span> &#123;<br>     &#123; .compatible = <span class="hljs-string">&quot;st,stm32-ltdc&quot;</span>&#125;,<br>     &#123; <span class="hljs-comment">/* end node */</span> &#125;,<br> &#125;;<br> MODULE_DEVICE_TABLE(of, drv_dt_ids);<br><br> <span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">platform_driver</span> <span class="hljs-title">stm_drm_platform_driver</span> =</span> &#123;<br>     .probe = stm_drm_platform_probe,<br>     .remove = stm_drm_platform_remove,<br>     .driver = &#123;<br>         .name = <span class="hljs-string">&quot;stm32-display&quot;</span>,<br>         .of_match_table = drv_dt_ids,<br>         .pm = &amp;drv_pm_ops,     <span class="hljs-comment">//power manage</span><br>     &#125;,<br> &#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>标准platform总线驱动，与设备树中LTDC接口匹配</li>
+<li>匹配成功后执行probe函数</li>
+</ul>
+</li>
+<li><p>stm_drm_platform_probe函数源码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">stm_drm_platform_probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> platform_device *pdev)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> *<span class="hljs-title">dev</span> =</span> &amp;pdev-&gt;dev;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">ddev</span>;</span>          <span class="hljs-comment">//drm设备</span><br>    <span class="hljs-type">int</span> ret;<br><br>    DRM_DEBUG(<span class="hljs-string">&quot;%s\n&quot;</span>, __func__);<br><br>    dma_set_coherent_mask(dev, DMA_BIT_MASK(<span class="hljs-number">32</span>));  <span class="hljs-comment">//DMA内存映射相关</span><br><br>    ddev = drm_dev_alloc(&amp;drv_driver, dev);    <span class="hljs-comment">//为drm设备分配内存，将drm设备与驱动绑定并完成初始化工作</span><br><br>    <span class="hljs-keyword">if</span> (IS_ERR(ddev))<br>        <span class="hljs-keyword">return</span> PTR_ERR(ddev);<br><br>    ret = drv_load(ddev);     <span class="hljs-comment">//完成KMS的相关初始化工作 这是一个st自己封装的函数，下详解</span><br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_put;<br><br>    ret = drm_dev_register(ddev, <span class="hljs-number">0</span>);  <span class="hljs-comment">//将drm dev注册进drm core</span><br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_put;<br><br>    drm_fbdev_generic_setup(ddev, <span class="hljs-number">16</span>);   <span class="hljs-comment">//设置prefer bpp</span><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    err_put:<br>    drm_dev_put(ddev);<br><br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>drm_dev_alloc函数：   <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> drm_device *<span class="hljs-title function_">drm_dev_alloc</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> drm_driver *driver, <span class="hljs-keyword">struct</span> device *parent)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">dev</span>;</span><br>    <span class="hljs-type">int</span> ret;<br><br>    dev = kzalloc(<span class="hljs-keyword">sizeof</span>(*dev), GFP_KERNEL);   <span class="hljs-comment">//分配内存</span><br>    <span class="hljs-keyword">if</span> (!dev)<br>        <span class="hljs-keyword">return</span> ERR_PTR(-ENOMEM);<br><br>    ret = drm_dev_init(dev, driver, parent);  <span class="hljs-comment">//初始化drm_dev设备，此函数会使drm_device结构体下的driver成员变量指向drm_driver</span><br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        kfree(dev);<br>        <span class="hljs-keyword">return</span> ERR_PTR(ret);<br>&#125;<br><br><span class="hljs-keyword">return</span> dev;         <span class="hljs-comment">//返回drm_dev结构体指针</span><br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>drv_load函数解析：   <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c">    <span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">drv_load</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> drm_device *ddev)</span><br>&#123;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">platform_device</span> *<span class="hljs-title">pdev</span> =</span> to_platform_device(ddev-&gt;dev);<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">ltdc_device</span> *<span class="hljs-title">ldev</span>;</span><br><span class="hljs-type">int</span> ret;<br><br>DRM_DEBUG(<span class="hljs-string">&quot;%s\n&quot;</span>, __func__);<br><br>ldev = devm_kzalloc(ddev-&gt;dev, <span class="hljs-keyword">sizeof</span>(*ldev), GFP_KERNEL);  <span class="hljs-comment">//为ltdc设备申请内存</span><br><span class="hljs-keyword">if</span> (!ldev)<br>    <span class="hljs-keyword">return</span> -ENOMEM;<br><br>ddev-&gt;dev_private = (<span class="hljs-type">void</span> *)ldev;<br><br>drm_mode_config_init(ddev);  <span class="hljs-comment">//创建一些全局数据结构 包括standard properties</span><br><br><span class="hljs-comment">//设置宽度和高度，在调用drm_mode_addbf()函数时限制framebuffer的size，</span><br>ddev-&gt;mode_config.min_width = <span class="hljs-number">0</span>;<br>ddev-&gt;mode_config.min_height = <span class="hljs-number">0</span>;<br>ddev-&gt;mode_config.max_width = STM_MAX_FB_WIDTH;<br>ddev-&gt;mode_config.max_height = STM_MAX_FB_HEIGHT;<br><br>ddev-&gt;mode_config.funcs = &amp;drv_mode_config_funcs;   <span class="hljs-comment">//设置mode config回调函数结构体 struct drm_mode_config_funcs&#123;...&#125;;</span><br><br>ret = ltdc_load(ddev);<br><span class="hljs-keyword">if</span> (ret)<br>    <span class="hljs-keyword">goto</span> err;<br><br>drm_mode_config_reset(ddev);<br>drm_kms_helper_poll_init(ddev);<br><br>platform_set_drvdata(pdev, ddev);   <span class="hljs-comment">//将ddev设置为platform_dev-&gt;dev的私有数据</span><br><br><span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>err:<br>drm_mode_config_cleanup(ddev);<br><span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>ltdc_load函数解析<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">ltdc_load</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> drm_device *ddev)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">platform_device</span> *<span class="hljs-title">pdev</span> =</span> to_platform_device(ddev-&gt;dev);<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">ltdc_device</span> *<span class="hljs-title">ldev</span> =</span> ddev-&gt;dev_private;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> *<span class="hljs-title">dev</span> =</span> ddev-&gt;dev;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span> *<span class="hljs-title">np</span> =</span> dev-&gt;of_node;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_bridge</span> *<span class="hljs-title">bridge</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_panel</span> *<span class="hljs-title">panel</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_crtc</span> *<span class="hljs-title">crtc</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">reset_control</span> *<span class="hljs-title">rstc</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">resource</span> *<span class="hljs-title">res</span>;</span><br>    <span class="hljs-type">int</span> irq, i, nb_endpoints;<br>    <span class="hljs-type">int</span> ret = -ENODEV;<br><br>    DRM_DEBUG_DRIVER(<span class="hljs-string">&quot;\n&quot;</span>);<br><br>    nb_endpoints = of_graph_get_endpoint_count(np);    <span class="hljs-comment">//实际上在property.c中定义的,获取节点的num</span><br>    <span class="hljs-keyword">if</span> (!nb_endpoints)<br>        <span class="hljs-keyword">return</span> -ENODEV;<br><br>    ldev-&gt;pixel_clk = devm_clk_get(dev, <span class="hljs-string">&quot;lcd&quot;</span>);       <span class="hljs-comment">//通过设备树中的clock-names获取ltdc-px clock，&quot;lcd&quot;为设备树中该属性的名字</span><br>    <span class="hljs-keyword">if</span> (IS_ERR(ldev-&gt;pixel_clk)) &#123;<br>        <span class="hljs-keyword">if</span> (PTR_ERR(ldev-&gt;pixel_clk) != -EPROBE_DEFER)<br>            DRM_ERROR(<span class="hljs-string">&quot;Unable to get lcd clock\n&quot;</span>);<br>        <span class="hljs-keyword">return</span> PTR_ERR(ldev-&gt;pixel_clk);<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (clk_prepare_enable(ldev-&gt;pixel_clk)) &#123;        <span class="hljs-comment">//enable clk</span><br>        DRM_ERROR(<span class="hljs-string">&quot;Unable to prepare pixel clock\n&quot;</span>);<br>        <span class="hljs-keyword">return</span> -ENODEV;<br>    &#125;<br><br>    <span class="hljs-comment">/* Get endpoints if any */</span><br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; nb_endpoints; i++) &#123;            <br>        ret = drm_of_find_panel_or_bridge(np, <span class="hljs-number">0</span>, i, &amp;panel, &amp;bridge);<br><br>        <span class="hljs-keyword">if</span> (ret == -ENODEV)<br>            <span class="hljs-keyword">continue</span>;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ret)<br>            <span class="hljs-keyword">goto</span> err;<br><br>        <span class="hljs-keyword">if</span> (panel) &#123;      <span class="hljs-comment">//panel在panel-simple.c中完成定义</span><br>            bridge = drm_panel_bridge_add(panel, DRM_MODE_CONNECTOR_DPI);  <span class="hljs-comment">//Creates a &amp;drm_bridge and &amp;drm_connector that just calls the appropriate functions from &amp;drm_panel.</span><br>            <span class="hljs-keyword">if</span> (IS_ERR(bridge)) &#123;<br>                DRM_ERROR(<span class="hljs-string">&quot;panel-bridge endpoint %d\n&quot;</span>, i);<br>                ret = PTR_ERR(bridge);<br>                <span class="hljs-keyword">goto</span> err;<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (bridge) &#123;<br>            ret = ltdc_encoder_init(ddev, bridge);    <span class="hljs-comment">//encoder的创建和初始化 并且attach encoder and bridge</span><br>            <span class="hljs-keyword">if</span> (ret) &#123;<br>                DRM_ERROR(<span class="hljs-string">&quot;init encoder endpoint %d\n&quot;</span>, i);<br>                <span class="hljs-keyword">goto</span> err;<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    rstc = devm_reset_control_get_exclusive(dev, <span class="hljs-literal">NULL</span>);<br><br>    mutex_init(&amp;ldev-&gt;err_lock);<br><br>    <span class="hljs-keyword">if</span> (!IS_ERR(rstc)) &#123;<br>        reset_control_assert(rstc);<br>        usleep_range(<span class="hljs-number">10</span>, <span class="hljs-number">20</span>);<br>        reset_control_deassert(rstc);<br>    &#125;<br><br>    res = platform_get_resource(pdev, IORESOURCE_MEM, <span class="hljs-number">0</span>);    <span class="hljs-comment">//获取ltdc的mem资源</span><br>    ldev-&gt;regs = devm_ioremap_resource(dev, res);            <span class="hljs-comment">//remap 得到base</span><br>    <span class="hljs-keyword">if</span> (IS_ERR(ldev-&gt;regs)) &#123;<br>        DRM_ERROR(<span class="hljs-string">&quot;Unable to get ltdc registers\n&quot;</span>);<br>        ret = PTR_ERR(ldev-&gt;regs);<br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    reg_clear(ldev-&gt;regs, LTDC_IER, IER_LIE | IER_RRIE | IER_FUIE | IER_TERRIE);  <span class="hljs-comment">//关闭ltdc中断</span><br><br>    ret = ltdc_get_caps(ddev);<br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        DRM_ERROR(<span class="hljs-string">&quot;hardware identifier (0x%08x) not supported!\n&quot;</span>, ldev-&gt;caps.hw_version);<br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    DRM_DEBUG_DRIVER(<span class="hljs-string">&quot;ltdc hw version 0x%08x\n&quot;</span>, ldev-&gt;caps.hw_version);<br><br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; ldev-&gt;caps.nb_irq; i++) &#123;<br>        irq = platform_get_irq(pdev, i);       <span class="hljs-comment">//获取中断号</span><br>        <span class="hljs-keyword">if</span> (irq &lt; <span class="hljs-number">0</span>) &#123;<br>            ret = irq;<br>            <span class="hljs-keyword">goto</span> err;<br>        &#125;<br><br>        ret = devm_request_threaded_irq(dev, irq, ltdc_irq, ltdc_irq_thread, IRQF_ONESHOT, dev_name(dev), ddev);  <span class="hljs-comment">//申请中断</span><br>        <span class="hljs-keyword">if</span> (ret) &#123;<br>            DRM_ERROR(<span class="hljs-string">&quot;Failed to register LTDC interrupt\n&quot;</span>);<br>            <span class="hljs-keyword">goto</span> err;<br>        &#125;<br><br>    &#125;<br><br>    crtc = devm_kzalloc(dev, <span class="hljs-keyword">sizeof</span>(*crtc), GFP_KERNEL);<br>    <span class="hljs-keyword">if</span> (!crtc) &#123;<br>        DRM_ERROR(<span class="hljs-string">&quot;Failed to allocate crtc\n&quot;</span>);<br>        ret = -ENOMEM;<br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    ddev-&gt;mode_config.allow_fb_modifiers = <span class="hljs-literal">true</span>;<br><br>    ret = ltdc_crtc_init(ddev, crtc);       <span class="hljs-comment">//plane 和 crtc的创建和初始化</span><br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        DRM_ERROR(<span class="hljs-string">&quot;Failed to init crtc\n&quot;</span>);<br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    ret = drm_vblank_init(ddev, NB_CRTC);  <span class="hljs-comment">//initialize vblank support</span><br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        DRM_ERROR(<span class="hljs-string">&quot;Failed calling drm_vblank_init()\n&quot;</span>);<br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    <span class="hljs-comment">/* Allow usage of vblank without having to call drm_irq_install */</span><br>    ddev-&gt;irq_enabled = <span class="hljs-number">1</span>;<br><br>    clk_disable_unprepare(ldev-&gt;pixel_clk);<br><br>    pinctrl_pm_select_sleep_state(ddev-&gt;dev);<br><br>    pm_runtime_enable(ddev-&gt;dev);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    err:<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; nb_endpoints; i++)<br>        drm_of_panel_bridge_remove(ddev-&gt;dev-&gt;of_node, <span class="hljs-number">0</span>, i);<br><br>    clk_disable_unprepare(ldev-&gt;pixel_clk);<br><br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>panel-simple.c文件解析</p>
+<ul>
+<li>数据结构   <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">panel_simple</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_panel</span> <span class="hljs-title">base</span>;</span>   <span class="hljs-comment">//继承的基础数据结构</span><br>    <span class="hljs-type">bool</span> prepared;<br>    <span class="hljs-type">bool</span> enabled;<br>    <span class="hljs-type">bool</span> no_hpd;<br><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">panel_desc</span> *<span class="hljs-title">desc</span>;</span>  <span class="hljs-comment">//panel describe</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">backlight_device</span> *<span class="hljs-title">backlight</span>;</span>  <span class="hljs-comment">//背光</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">regulator</span> *<span class="hljs-title">supply</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">i2c_adapter</span> *<span class="hljs-title">ddc</span>;</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">gpio_desc</span> *<span class="hljs-title">enable_gpio</span>;</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_display_mode</span> <span class="hljs-title">override_mode</span>;</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>struct drm_panel base  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_panel</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">drm</span>;</span>  <span class="hljs-comment">//拥有此panel的drm_dev</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_connector</span> *<span class="hljs-title">connector</span>;</span>  <span class="hljs-comment">//connector attached to the panel</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> *<span class="hljs-title">dev</span>;</span>  <span class="hljs-comment">//parent device</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_panel_funcs</span> *<span class="hljs-title">funcs</span>;</span>   <span class="hljs-comment">//panel的操作函数集</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">list</span>;</span><br>&#125;;<br></code></pre></td></tr></table></figure></li>
+<li>struct panel_desc *desc   <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">panel_desc</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_display_mode</span> *<span class="hljs-title">modes</span>;</span>  <span class="hljs-comment">//指向一个适合此panel的mode array,设置屏幕参数</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> num_modes;                <span class="hljs-comment">//size of mode array</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">display_timing</span> *<span class="hljs-title">timings</span>;</span>  <span class="hljs-comment">//指向一个timing array</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> num_timings;              <span class="hljs-comment">//size of timing array</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> bpc;                      <span class="hljs-comment">// bits/color</span><br>    <span class="hljs-comment">/*屏幕大小 单位为毫米*/</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> width;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> height;<br>    &#125; size;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> prepare;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> hpd_absent_delay;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> enable;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> disable;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> unprepare;<br>    &#125; delay;<br><br>    u32 bus_format;  <span class="hljs-comment">//See MEDIA_BUS_FMT_... defines.</span><br>    u32 bus_flags;   <span class="hljs-comment">//See DRM_BUS_FLAG_... defines.</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>代码分析</li>
+</ul>
+<blockquote>
+<p>panel-simple也是一个标准的platform总线驱动</p>
+</blockquote>
+<p> -<br>     <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">platform_driver</span> <span class="hljs-title">panel_simple_platform_driver</span> =</span> &#123;<br>    .driver = &#123;<br>        .name = <span class="hljs-string">&quot;panel-simple&quot;</span>,<br>        .of_match_table = platform_of_match,<br>    &#125;,<br>    .probe = panel_simple_platform_probe,<br>    .remove = panel_simple_platform_remove,<br>    .shutdown = panel_simple_platform_shutdown,<br>&#125;;<br></code></pre></td></tr></table></figure><br>     - platform_of_match中包含了大量的匹配项用于匹配不同的屏幕设备<br>         <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">of_device_id</span> <span class="hljs-title">platform_of_match</span>[] =</span> &#123;<br>    &#123;<br>        .compatible = <span class="hljs-string">&quot;ampire,am-480272h3tmqw-t01h&quot;</span>,   <span class="hljs-comment">//用于与设备树匹配</span><br>        .data = &amp;ampire_am_480272h3tmqw_t01h,   <span class="hljs-comment">//指向一个panel_desc结构体</span><br>    &#125;,<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure><br>     - panel_simple_platform_probe中核心是panel_simple_probe函数，主要完成屏幕设备的参数设置、初始化、注册<br>         <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">panel_simple_probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> panel_desc *desc)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span> *<span class="hljs-title">backlight</span>, *<span class="hljs-title">ddc</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">panel_simple</span> *<span class="hljs-title">panel</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">display_timing</span> <span class="hljs-title">dt</span>;</span><br>    <span class="hljs-type">int</span> err;<br><br>    panel = devm_kzalloc(dev, <span class="hljs-keyword">sizeof</span>(*panel), GFP_KERNEL);   <span class="hljs-comment">//为panel开辟内存</span><br>    <span class="hljs-keyword">if</span> (!panel)<br>        <span class="hljs-keyword">return</span> -ENOMEM;<br><br>    panel-&gt;enabled = <span class="hljs-literal">false</span>;<br>    panel-&gt;prepared = <span class="hljs-literal">false</span>;<br>    panel-&gt;desc = desc;<br><br>    panel-&gt;no_hpd = of_property_read_bool(dev-&gt;of_node, <span class="hljs-string">&quot;no-hpd&quot;</span>);<br><br>    panel-&gt;supply = devm_regulator_get(dev, <span class="hljs-string">&quot;power&quot;</span>);<br>    <span class="hljs-keyword">if</span> (IS_ERR(panel-&gt;supply))<br>        <span class="hljs-keyword">return</span> PTR_ERR(panel-&gt;supply);<br><br>    panel-&gt;enable_gpio = devm_gpiod_get_optional(dev, <span class="hljs-string">&quot;enable&quot;</span>, GPIOD_OUT_LOW);                          <br>    <span class="hljs-keyword">if</span> (IS_ERR(panel-&gt;enable_gpio)) &#123;<br>        err = PTR_ERR(panel-&gt;enable_gpio);<br>        <span class="hljs-keyword">if</span> (err != -EPROBE_DEFER)<br>            dev_err(dev, <span class="hljs-string">&quot;failed to request GPIO: %d\n&quot;</span>, err);<br>        <span class="hljs-keyword">return</span> err;<br>    &#125;<br><br>    backlight = of_parse_phandle(dev-&gt;of_node, <span class="hljs-string">&quot;backlight&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (backlight) &#123;<br>        panel-&gt;backlight = of_find_backlight_by_node(backlight);<br>        of_node_put(backlight);<br><br>        <span class="hljs-keyword">if</span> (!panel-&gt;backlight)<br>            <span class="hljs-keyword">return</span> -EPROBE_DEFER;<br>    &#125;<br><br>    ddc = of_parse_phandle(dev-&gt;of_node, <span class="hljs-string">&quot;ddc-i2c-bus&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (ddc) &#123;<br>        panel-&gt;ddc = of_find_i2c_adapter_by_node(ddc);<br>        of_node_put(ddc);<br><br>        <span class="hljs-keyword">if</span> (!panel-&gt;ddc) &#123;<br>            err = -EPROBE_DEFER;<br>            <span class="hljs-keyword">goto</span> free_backlight;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (!of_get_display_timing(dev-&gt;of_node, <span class="hljs-string">&quot;panel-timing&quot;</span>, &amp;dt))<br>        panel_simple_parse_panel_timing_node(dev, panel, &amp;dt);<br><br>    drm_panel_init(&amp;panel-&gt;base);<br>    panel-&gt;base.dev = dev;<br>    panel-&gt;base.funcs = &amp;panel_simple_funcs;<br><br>    err = drm_panel_add(&amp;panel-&gt;base);<br>    <span class="hljs-keyword">if</span> (err &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> free_ddc;<br><br>    dev_set_drvdata(dev, panel);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>free_ddc:<br>    <span class="hljs-keyword">if</span> (panel-&gt;ddc)<br>        put_device(&amp;panel-&gt;ddc-&gt;dev);<br>free_backlight:<br>    <span class="hljs-keyword">if</span> (panel-&gt;backlight)<br>        put_device(&amp;panel-&gt;backlight-&gt;dev);<br><br>    <span class="hljs-keyword">return</span> err;<br>&#125;<br></code></pre></td></tr></table></figure></p>
+</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux/Drivers/" class="category-chain-item">Drivers</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux/Drivers/DRM/" class="category-chain-item">DRM</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>stm32mp157_drm驱动源码分析</div>
+      <div>http://example.com/2022/10/24/stm32mp157_drm驱动分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Hector</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/10/21/DRM%E7%BB%BC%E5%90%88/" title="DRM应用及驱动浅析">
+                        <span class="hidden-mobile">DRM应用及驱动浅析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://example.com/2022/10/24/stm32mp157_drm%E9%A9%B1%E5%8A%A8%E5%88%86%E6%9E%90/';
+          this.page.identifier = '/2022/10/24/stm32mp157_drm%E9%A9%B1%E5%8A%A8%E5%88%86%E6%9E%90/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       Hector > 保持好奇-保持热爱 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
