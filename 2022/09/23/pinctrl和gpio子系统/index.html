@@ -24,7 +24,7 @@
 <meta property="og:description" content="pinctrl和gpio子系统详解 gpio相关函数">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-09-23T11:09:12.000Z">
-<meta property="article:modified_time" content="2022-10-04T07:27:06.905Z">
+<meta property="article:modified_time" content="2022-11-19T15:22:19.022Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -239,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.3k 字
+          6.9k 字
         
       </span>
     
@@ -250,7 +250,7 @@
         
         
         
-          28 分钟
+          58 分钟
         
       </span>
     
@@ -306,14 +306,60 @@
                 
                 <div align="center">
 
-<h3 id="pinctrl子系统（源码位置-drivers-x2F-pinctrl）"><a href="#pinctrl子系统（源码位置-drivers-x2F-pinctrl）" class="headerlink" title="pinctrl子系统（源码位置 drivers&#x2F;pinctrl）"></a>pinctrl子系统（源码位置 drivers&#x2F;pinctrl）</h3></div/>
 
-<h4 id="pinctrl子系统工作内容"><a href="#pinctrl子系统工作内容" class="headerlink" title="pinctrl子系统工作内容"></a><strong>pinctrl子系统工作内容</strong></h4><ol>
-<li>获取设备树中的pin信息</li>
-<li>根据获取到的pin信息来设置pin的复用功能</li>
-<li>根据获取到的pin信息来设置pin的电气特性</li>
+<h3 id="pinctrl子系统"><a href="#pinctrl子系统" class="headerlink" title="pinctrl子系统"></a>pinctrl子系统</h3></div>
+
+<h4 id="1-关于pinctrl"><a href="#1-关于pinctrl" class="headerlink" title="1. 关于pinctrl"></a>1. 关于pinctrl</h4><h5 id="1-1-作用"><a href="#1-1-作用" class="headerlink" title="1.1 作用"></a>1.1 作用</h5><ol>
+<li>pin的枚举和命名</li>
+<li>pin的复用</li>
+<li>pin的配置（上下拉、驱动能力、是否开漏等）</li>
 </ol>
-<h4 id="pin配置信息详解"><a href="#pin配置信息详解" class="headerlink" title="pin配置信息详解"></a><strong>pin配置信息详解</strong></h4><p>一般在设备树中创建一个节点描述pin信息，以imx6u为例：<br>imx6ull.dtsi中有iomuxc节点描述外设pin信息</p>
+<h5 id="1-2-pinctrl的核心数据结构"><a href="#1-2-pinctrl的核心数据结构" class="headerlink" title="1.2 pinctrl的核心数据结构"></a>1.2 pinctrl的核心数据结构</h5><ul>
+<li>使用struct pinctrl_desc描述一个pin ctroller</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_desc</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name;<br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_pin_desc</span> *<span class="hljs-title">pins</span>;</span>   <span class="hljs-comment">//array 描述所有的pins 每一个元素描述一个单独的pin</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> npins;                    <span class="hljs-comment">//size of array   pins和npins构成一个索引</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_ops</span> *<span class="hljs-title">pctlops</span>;</span>     <span class="hljs-comment">//引脚控制操作func 用来获取某组引脚 解析设备树节点</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinmux_ops</span> *<span class="hljs-title">pmxops</span>;</span>       <span class="hljs-comment">//引脚复用操作func</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinconf_ops</span> *<span class="hljs-title">confops</span>;</span>     <span class="hljs-comment">//引脚配置操作func</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">module</span> *<span class="hljs-title">owner</span>;</span><br>    <span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_GENERIC_PINCONF</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> num_custom_params;<br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinconf_generic_params</span> *<span class="hljs-title">custom_params</span>;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pin_config_item</span> *<span class="hljs-title">custom_conf_items</span>;</span><br>    <span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用struct pinctrl_pin_desc描述单个引脚</p>
+<blockquote>
+<p>在pinctrl_pin_desc中以数组形式存在，与npins成员构成索引，方便驱动和具体的pin对应</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_pin_desc</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> number;     <span class="hljs-comment">//引脚序号</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name;	 <span class="hljs-comment">//引脚名</span><br>    <span class="hljs-type">void</span> *drv_data;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用group_desc描述一组特定引脚，如IIC、UART等</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">group_desc</span>&#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name;<br>    <span class="hljs-type">int</span> *pins;    <span class="hljs-comment">//应该group中pins对应的npins成员的下标数组</span><br>    <span class="hljs-type">int</span> num_pins; <span class="hljs-comment">//group中pin的个数</span><br>    <span class="hljs-type">void</span> *data;<br>&#125;;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>pinctrl_ops函数族  主要从设备树中获取group节点信息并map</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_ops</span> &#123;</span>   <br>    <span class="hljs-type">int</span> (*get_groups_count) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev);   <span class="hljs-comment">//获取整个pin_controller中的group个数并建立索引，后续根根索引操作group</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *(*get_group_name) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> selector );  <span class="hljs-comment">//获取组名，selector就是需要获得的group的索引号</span><br>    <span class="hljs-type">int</span> (*get_group_pins) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> selector, <span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> **pins, <span class="hljs-type">unsigned</span> *num_pins);  <span class="hljs-comment">//获取某组的引脚 获取到的信息保存到pins和num_pins指针中</span><br>    <span class="hljs-type">void</span> (*pin_dbg_show) ();  <span class="hljs-comment">//这玩意儿感觉没啥用 debug相关？</span><br>    <span class="hljs-type">int</span> (*dt_node_to_map) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-keyword">struct</span> device_node *np_config, <span class="hljs-keyword">struct</span> pinctrl_map **<span class="hljs-built_in">map</span>, <span class="hljs-type">unsigned</span> *num_maps); <span class="hljs-comment">//解析设备树节点，转换成pinctrl_map，这是一个重点函数   </span><br>    <span class="hljs-type">void</span> (*dt_free_map) ();  <span class="hljs-comment">//释放map</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>pinmux_ops函数族 引脚复用相关</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c"> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinmux_ops</span> &#123;</span><br>    <span class="hljs-type">int</span> (*request) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> offset); <span class="hljs-comment">//如果一个pin已作他用 request失败 </span><br>    <span class="hljs-type">int</span> (*<span class="hljs-built_in">free</span>) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> offset);       <br>    <span class="hljs-type">int</span> (*get_functions_count) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev);   <span class="hljs-comment">//获取function数量       </span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *(*get_function_name) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> selector);  <span class="hljs-comment">//获取function名       </span><br>    <span class="hljs-type">int</span> (*get_function_groups) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> selector, <span class="hljs-type">const</span> <span class="hljs-type">char</span> * <span class="hljs-type">const</span> **groups, <span class="hljs-type">unsigned</span> *num_groups);   <span class="hljs-comment">//获取function下的group       </span><br>    <span class="hljs-type">int</span> (*set_mux) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> func_selector, <span class="hljs-type">unsigned</span> group_selector);   <span class="hljs-comment">//设置复用  将指定的group设置为指定的function</span><br>    <span class="hljs-type">int</span> (*gpio_request_enable) ();<br>    <span class="hljs-type">void</span> (*gpio_disable_free) ();<br>    <span class="hljs-type">int</span> (*gpio_set_direction) ();<br>    <span class="hljs-type">bool</span> strict;  <span class="hljs-comment">//设为true时说明不允许pin作为gpio和其他功能同时使用</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>pinconf_ops函数族 引脚配置相关</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinconf_ops</span> &#123;</span><br>    <span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_GENERIC_PINCONF</span><br>    <span class="hljs-type">bool</span> is_generic;<br>    <span class="hljs-meta">#<span class="hljs-keyword">endif</span>        </span><br>    <span class="hljs-type">int</span> (*pin_config_get) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> pin, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> *config);   <span class="hljs-comment">//获取单个引脚配置  保存在config指针中      </span><br>    <span class="hljs-type">int</span> (*pin_config_set) (<span class="hljs-keyword">struct</span> pinctrl_dev *pctldev, <span class="hljs-type">unsigned</span> pin, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> *configs, <span class="hljs-type">unsigned</span> num_configs);    <span class="hljs-comment">//使用config指针配置单个引脚        </span><br>    <span class="hljs-type">int</span> (*pin_config_group_get) ();   <span class="hljs-comment">//获取某组引脚配置        </span><br>    <span class="hljs-type">int</span> (*pin_config_group_set) ();   <span class="hljs-comment">//配置某组引脚        </span><br>    <span class="hljs-type">int</span> (*pin_config_dbg_parse_modify) ();   <span class="hljs-comment">//用以debugfs修改pin配置信息       </span><br>    <span class="hljs-type">void</span> (*pin_config_dbg_show) ();   <span class="hljs-comment">//用以debugfs提供pin配置信息        </span><br>    <span class="hljs-type">void</span> (*pin_config_group_dbg_show) ();   <span class="hljs-comment">//用以debugfs提供group配置信息        </span><br>    <span class="hljs-type">void</span> (*pin_config_config_dbg_show) (s);   <span class="hljs-comment">//用以debugfs解析并显示pin的配置</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h5 id="1-3-pin-state"><a href="#1-3-pin-state" class="headerlink" title="1.3 pin state"></a>1.3 pin state</h5><blockquote>
+<p>设备在某一状态下，其pin（group）、function（功能）、configuratio（配置）是唯一确定的，把这三个元素组成的状态抽象为pin state.核心数据结构为pictrl_map。由pinctrl_ops函数族中的dt_node_to_map函数完成。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_map</span> &#123;</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *dev_name;   <span class="hljs-comment">//device的名称</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name;   <span class="hljs-comment">//pin state的名称</span><br> <span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">pinctrl_map_type</span> <span class="hljs-title">type</span>;</span>   <span class="hljs-comment">//该map的类型</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *ctrl_dev_name;  <span class="hljs-comment">//pin controller device的名字</span><br> <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_map_mux</span> <span class="hljs-title">mux</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_map_configs</span> <span class="hljs-title">configs</span>;</span><br> &#125; data;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">pinctrl_map_type</span> &#123;</span><br> PIN_MAP_TYPE_INVALID,<br> PIN_MAP_TYPE_DUMMY_STATE,    <span class="hljs-comment">//不需要任何配置，仅仅为了表示state的存在</span><br> PIN_MAP_TYPE_MUX_GROUP,  <span class="hljs-comment">//配置管脚复用</span><br> PIN_MAP_TYPE_CONFIGS_PIN,  <span class="hljs-comment">//配置pin</span><br> PIN_MAP_TYPE_CONFIGS_GROUP,  <span class="hljs-comment">//配置pin group</span><br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_map_mux</span> &#123;</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *group;  <span class="hljs-comment">//group的名字</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *function;  <span class="hljs-comment">//function的名字</span><br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pinctrl_map_configs</span> &#123;</span><br> <span class="hljs-type">const</span> <span class="hljs-type">char</span> *group_or_pin;  <span class="hljs-comment">//该pin或者pin group的名字</span><br> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> *configs;  <span class="hljs-comment">//config数组</span><br> <span class="hljs-type">unsigned</span> num_configs;  <span class="hljs-comment">//配置项的个数</span><br>&#125;; <br></code></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-pinctrl和GPIO的设备树和基本API"><a href="#2-pinctrl和GPIO的设备树和基本API" class="headerlink" title="2 pinctrl和GPIO的设备树和基本API"></a>2 pinctrl和GPIO的设备树和基本API</h4><blockquote>
+<p>（源码位置 drivers&#x2F;pinctrl）</p>
+</blockquote>
+</div>
+
+<h5 id="2-1-pin配置信息详解"><a href="#2-1-pin配置信息详解" class="headerlink" title="2.1 pin配置信息详解"></a>2.1 pin配置信息详解</h5><p>一般在设备树中创建一个节点描述pin信息，以imx6u为例：<br>imx6ull.dtsi中有iomuxc节点描述外设pin信息</p>
 <figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">iomuxc:</span> <span class="hljs-title class_">iomuxc@020e0000</span> <span class="hljs-punctuation">&#123;</span><br><span class="hljs-attr">compatible</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;fsl,imx6ul-iomuxc&quot;</span><span class="hljs-punctuation">;</span><br><span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">0x020e0000</span> <span class="hljs-number">0x4000</span>&gt;</span><span class="hljs-punctuation">;</span><br><span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure>
 <p>reg属性中的0x020e0000为iomuxc外设节点的首地址。<br>在.dts文件中以&amp;iomuxc引用方式向.dtsi文件中iomuxc节点追加信息</p>
 <figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-variable">&amp;iomuxc</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">pinctrl-names</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;default&quot;</span><span class="hljs-punctuation">;</span><br>    pinctrl<span class="hljs-number">-0</span> = <span class="hljs-params">&lt;<span class="hljs-variable">&amp;pinctrl_hog_1</span>&gt;</span><span class="hljs-punctuation">;</span><br>    <span class="hljs-title class_">imx6ul-evk</span> <span class="hljs-punctuation">&#123;</span><br><span class="hljs-symbol">        pinctrl_hog_1:</span> <span class="hljs-title class_">hoggrp-1</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">fsl,pins</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;</span><br><span class="hljs-params">                MX6UL_PAD_UART1_RTS_B__GPIO1_IO19       <span class="hljs-number">0x17059</span></span><br><span class="hljs-params">                MX6UL_PAD_GPIO1_IO05__USDHC1_VSELECT    <span class="hljs-number">0x17059</span></span><br><span class="hljs-params">                MX6UL_PAD_GPIO1_IO09__GPIO1_IO09        <span class="hljs-number">0x17059</span></span><br><span class="hljs-params">                MX6UL_PAD_GPIO1_IO00__ANATOP_OTG1_ID    <span class="hljs-number">0x13058</span></span><br><span class="hljs-params">            &gt;</span><span class="hljs-punctuation">;</span><br>        <span class="hljs-punctuation">&#125;;</span><br>        ...<br>    <span class="hljs-punctuation">&#125;;</span><br><span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure>
@@ -327,15 +373,12 @@
 <li><strong>0x0</strong>(input_reg寄存器值): 设置input_reg寄存器值，此处无效</li>
 </ul>
 </li>
-<li><strong>0x17059</strong> 为confg_reg寄存器的值，由程序员控制</li>
+<li><strong>0x17059</strong> 为confg_reg寄存器的值，根据具体需求配置</li>
 </ul>
 <blockquote>
 <p><em>注：.dtsi文件引用imx6ull-pinfunc.h文件，而imx6ull-pinfunc.h文件再引用imx6ull-pinfunc.h</em></p>
 </blockquote>
-<h4 id="PIN驱动程序详解"><a href="#PIN驱动程序详解" class="headerlink" title="PIN驱动程序详解"></a><strong>PIN驱动程序详解</strong></h4><blockquote>
-<p>  此节涉及到linux驱动分层与分离以及平台设备驱动，未来另起一篇详写</p>
-</blockquote>
-<h4 id="设备树中添加pinctrl节点"><a href="#设备树中添加pinctrl节点" class="headerlink" title="设备树中添加pinctrl节点"></a><strong>设备树中添加pinctrl节点</strong></h4><blockquote>
+<h5 id="2-2设备树中添加pinctrl节点"><a href="#2-2设备树中添加pinctrl节点" class="headerlink" title="2.2设备树中添加pinctrl节点"></a>2.2设备树中添加pinctrl节点</h5><blockquote>
 <p>例：虚拟一个名为“test”的设备，设备使用GPIO1_IO00这个PIN的GPIO功能。<br>具体步骤如下：</p>
 </blockquote>
 <ol>
@@ -344,19 +387,22 @@
 <li>添加pin的配置信息,即复用引脚和config值<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol">pinctrl_test:</span>testgrp<span class="hljs-punctuation">&#123;</span><br>    fsl,pins<span class="hljs-params">&lt;</span><br><span class="hljs-params">     MX6UL_PAD_GPIO1_IO00__GPIO1_IO00 config</span><br><span class="hljs-params">    &gt;</span><span class="hljs-punctuation">;</span><br><span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure></li>
 </ol>
 <div align="center">
-### gpio子系统
-</div/>
-gpio子系统的作用：初始化GPIO并提供相应的API函数
 
-<h4 id="设备树中的GPIO信息"><a href="#设备树中的GPIO信息" class="headerlink" title="设备树中的GPIO信息"></a><strong>设备树中的GPIO信息</strong></h4><ol>
+<h5 id="2-3-gpio-API"><a href="#2-3-gpio-API" class="headerlink" title="2.3 gpio API"></a>2.3 gpio API</h5></div>
+
+<p>gpio子系统的作用：初始化GPIO并提供相应的API函数</p>
+<ul>
+<li>设备树中的GPIO信息</li>
+</ul>
+<ol>
 <li>添加pinctrl名字<br><code>pinctrl-name = &quot;defaul&quot;;</code></li>
 <li>在设备节点中添加设备所需的PIN的pinctrl信息所在子节点信息<br><code>pinctrl-n = &lt;&amp;pinctrl_xxx&gt;;</code><br>驱动根据pinctrl信息设置pin的复用功能和电气属性</li>
 <li>在设备节点中添加描述GPIO属性的语句<br><code>xxx_gpios = &lt;&amp;GPIO组 pin号 有效电平&gt;</code><br>比如<br><code>cd_gpios = &lt;&amp;gpio1 19 GPIO_ACTIVE_LOW&gt;;</code></li>
 </ol>
-<h4 id="GPIO驱动程序详解"><a href="#GPIO驱动程序详解" class="headerlink" title="GPIO驱动程序详解"></a><strong>GPIO驱动程序详解</strong></h4><blockquote>
-<p>  此节涉及到linux驱动分层与分离以及平台设备驱动，未来另起一篇详写</p>
-</blockquote>
-<h4 id="gpio子系统函数"><a href="#gpio子系统函数" class="headerlink" title="gpio子系统函数"></a><strong>gpio子系统函数</strong></h4><ol>
+<ul>
+<li>gpio子系统函数</li>
+</ul>
+<ol>
 <li><strong>API函数</strong> <mark> &lt;linux&#x2F;gpio.h&gt; </mark><br><code>int gpio_request(unsigned gpio, const char *label)</code><br><strong>gpio</strong>:要申请的gpio标号，通过of_get_named_gpio函数获取此标号<br><strong>label</strong>：给此gpio设置一个名字<br><strong>返回值</strong>：0-申请成功 其他值-申请失败<ol start="2">
 <li>释放GPIO管脚<br><code>void gpio_free(unsigned gpio)</code><br><strong>gpio</strong>:要释放的gpio标号</li>
 <li>设置gpio为输入模式<br><code>int gpio_direction_input(unsigned gpio) </code><br><strong>gpio</strong>：要设置的gpio标号<br><strong>返回值</strong>：0-设置成功 其他值-失败</li>
@@ -405,13 +451,6 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
   <a href="/categories/Linux/Drivers/" class="category-chain-item">Drivers</a>
   
-  
-    <span>></span>
-    
-  <a href="/categories/Linux/Drivers/%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">子系统</a>
-  
-  
-
   
 
   
@@ -477,9 +516,9 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/09/24/%E5%AE%9E%E9%AA%8C1%EF%BC%9Agpio-led/" title="实验1：gpio-led">
+                      <a href="/2022/10/02/linux%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%AB%9E%E4%BA%89/" title="linux并发与竞争">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">实验1：gpio-led</span>
+                        <span class="hidden-mobile">linux并发与竞争</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

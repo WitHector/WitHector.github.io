@@ -24,7 +24,7 @@
 <meta property="og:description" content="设备树基本属性以及获取设备树节点属性的of函数详解">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-09-22T11:50:23.000Z">
-<meta property="article:modified_time" content="2022-10-04T07:27:15.048Z">
+<meta property="article:modified_time" content="2022-11-19T15:12:21.559Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -389,9 +389,9 @@
 <li><strong>使用结构体struct device_node 表示设备节点</strong></li>
 </ul>
 <ol>
-<li><code>struct device_node *of_find_node_by_name(struct device_node *from, const char *name)</code><br>  <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br>  <strong>name</strong>：需要查找的节点名称<br>  <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败  <br/></li>
-<li><code>struct device_node *of_find_node_by_type(struct device_node *from, const char *type)</code><br>  <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br>  <strong>type</strong>：需要查找的节点类型<br>  <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败  <br/></li>
-<li><code>struct device_node *of_find_compatible_node(struct device_node *from, const char *type, const char *compatible)</code><br>  <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br>  <strong>type</strong>：需要查找的节点类型<br>  <strong>compatible</strong>：节点兼容性属性<br>  <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败  <br/></li>
+<li><code>struct device_node *of_find_node_by_name(struct device_node *from, const char *name)</code><br> <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br> <strong>name</strong>：需要查找的节点名称<br> <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败 <br/></li>
+<li><code>struct device_node *of_find_node_by_type(struct device_node *from, const char *type)</code><br> <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br> <strong>type</strong>：需要查找的节点类型<br> <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败 <br/></li>
+<li><code>struct device_node *of_find_compatible_node(struct device_node *from, const char *type, const char *compatible)</code><br> <strong>from</strong>：起始节点，为NULL时从根节点开始查找<br> <strong>type</strong>：需要查找的节点类型<br> <strong>compatible</strong>：节点兼容性属性<br> <strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败 <br/></li>
 <li><code>struct device_node *of_find_node_by_path(consy char *path)</code><br><strong>path</strong>：带有全路径的节点名<br><strong>返回值</strong>：找到的节点指针，如果为NULL表示查找失败</li>
 </ol>
 <h4 id="查找父节点和子节点函数"><a href="#查找父节点和子节点函数" class="headerlink" title="查找父节点和子节点函数"></a>查找父节点和子节点函数</h4><ol>
@@ -455,7 +455,7 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
 
 
    
-  
+
 
 
 
@@ -485,13 +485,6 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
   <a href="/categories/Linux/Drivers/" class="category-chain-item">Drivers</a>
   
-  
-    <span>></span>
-    
-  <a href="/categories/Linux/Drivers/%E8%AE%BE%E5%A4%87%E6%A0%91/" class="category-chain-item">设备树</a>
-  
-  
-
   
 
   
