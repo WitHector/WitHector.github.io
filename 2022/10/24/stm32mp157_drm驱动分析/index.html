@@ -24,7 +24,7 @@
 <meta property="og:description" content="分析正点原子stm32mp157开发板源码">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-24T11:50:23.000Z">
-<meta property="article:modified_time" content="2022-11-01T15:20:08.218Z">
+<meta property="article:modified_time" content="2022-11-22T15:43:15.363Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -239,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          10k 字
+          11k 字
         
       </span>
     
@@ -250,7 +250,7 @@
         
         
         
-          88 分钟
+          89 分钟
         
       </span>
     
@@ -354,6 +354,20 @@
 <p> -<br>     <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">platform_driver</span> <span class="hljs-title">panel_simple_platform_driver</span> =</span> &#123;<br>    .driver = &#123;<br>        .name = <span class="hljs-string">&quot;panel-simple&quot;</span>,<br>        .of_match_table = platform_of_match,<br>    &#125;,<br>    .probe = panel_simple_platform_probe,<br>    .remove = panel_simple_platform_remove,<br>    .shutdown = panel_simple_platform_shutdown,<br>&#125;;<br></code></pre></td></tr></table></figure><br>     - platform_of_match中包含了大量的匹配项用于匹配不同的屏幕设备<br>         <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">of_device_id</span> <span class="hljs-title">platform_of_match</span>[] =</span> &#123;<br>    &#123;<br>        .compatible = <span class="hljs-string">&quot;ampire,am-480272h3tmqw-t01h&quot;</span>,   <span class="hljs-comment">//用于与设备树匹配</span><br>        .data = &amp;ampire_am_480272h3tmqw_t01h,   <span class="hljs-comment">//指向一个panel_desc结构体</span><br>    &#125;,<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure><br>     - panel_simple_platform_probe中核心是panel_simple_probe函数，主要完成屏幕设备的参数设置、初始化、注册<br>         <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">panel_simple_probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> panel_desc *desc)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span> *<span class="hljs-title">backlight</span>, *<span class="hljs-title">ddc</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">panel_simple</span> *<span class="hljs-title">panel</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">display_timing</span> <span class="hljs-title">dt</span>;</span><br>    <span class="hljs-type">int</span> err;<br><br>    panel = devm_kzalloc(dev, <span class="hljs-keyword">sizeof</span>(*panel), GFP_KERNEL);   <span class="hljs-comment">//为panel开辟内存</span><br>    <span class="hljs-keyword">if</span> (!panel)<br>        <span class="hljs-keyword">return</span> -ENOMEM;<br><br>    panel-&gt;enabled = <span class="hljs-literal">false</span>;<br>    panel-&gt;prepared = <span class="hljs-literal">false</span>;<br>    panel-&gt;desc = desc;<br><br>    panel-&gt;no_hpd = of_property_read_bool(dev-&gt;of_node, <span class="hljs-string">&quot;no-hpd&quot;</span>);<br><br>    panel-&gt;supply = devm_regulator_get(dev, <span class="hljs-string">&quot;power&quot;</span>);<br>    <span class="hljs-keyword">if</span> (IS_ERR(panel-&gt;supply))<br>        <span class="hljs-keyword">return</span> PTR_ERR(panel-&gt;supply);<br><br>    panel-&gt;enable_gpio = devm_gpiod_get_optional(dev, <span class="hljs-string">&quot;enable&quot;</span>, GPIOD_OUT_LOW);                          <br>    <span class="hljs-keyword">if</span> (IS_ERR(panel-&gt;enable_gpio)) &#123;<br>        err = PTR_ERR(panel-&gt;enable_gpio);<br>        <span class="hljs-keyword">if</span> (err != -EPROBE_DEFER)<br>            dev_err(dev, <span class="hljs-string">&quot;failed to request GPIO: %d\n&quot;</span>, err);<br>        <span class="hljs-keyword">return</span> err;<br>    &#125;<br><br>    backlight = of_parse_phandle(dev-&gt;of_node, <span class="hljs-string">&quot;backlight&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (backlight) &#123;<br>        panel-&gt;backlight = of_find_backlight_by_node(backlight);<br>        of_node_put(backlight);<br><br>        <span class="hljs-keyword">if</span> (!panel-&gt;backlight)<br>            <span class="hljs-keyword">return</span> -EPROBE_DEFER;<br>    &#125;<br><br>    ddc = of_parse_phandle(dev-&gt;of_node, <span class="hljs-string">&quot;ddc-i2c-bus&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (ddc) &#123;<br>        panel-&gt;ddc = of_find_i2c_adapter_by_node(ddc);<br>        of_node_put(ddc);<br><br>        <span class="hljs-keyword">if</span> (!panel-&gt;ddc) &#123;<br>            err = -EPROBE_DEFER;<br>            <span class="hljs-keyword">goto</span> free_backlight;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (!of_get_display_timing(dev-&gt;of_node, <span class="hljs-string">&quot;panel-timing&quot;</span>, &amp;dt))<br>        panel_simple_parse_panel_timing_node(dev, panel, &amp;dt);<br><br>    drm_panel_init(&amp;panel-&gt;base);<br>    panel-&gt;base.dev = dev;<br>    panel-&gt;base.funcs = &amp;panel_simple_funcs;<br><br>    err = drm_panel_add(&amp;panel-&gt;base);<br>    <span class="hljs-keyword">if</span> (err &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> free_ddc;<br><br>    dev_set_drvdata(dev, panel);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>free_ddc:<br>    <span class="hljs-keyword">if</span> (panel-&gt;ddc)<br>        put_device(&amp;panel-&gt;ddc-&gt;dev);<br>free_backlight:<br>    <span class="hljs-keyword">if</span> (panel-&gt;backlight)<br>        put_device(&amp;panel-&gt;backlight-&gt;dev);<br><br>    <span class="hljs-keyword">return</span> err;<br>&#125;<br></code></pre></td></tr></table></figure></p>
 </li>
 </ol>
+  <!--PC版-->
+<div id="SOHUCS" ></div>
+<script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+window.changyan.api.config({
+appid: 'cywhVLBNm',
+conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
+});
+</script>
+
+   
+        
+
+  
 
                 
               </div>
@@ -450,6 +464,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2022/11/21/armv8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%9F%BA%E7%A1%80/" title="armv8体系结构基础">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">armv8体系结构基础</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
