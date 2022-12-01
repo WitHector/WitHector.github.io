@@ -16,23 +16,35 @@
   <meta name="author" content="Hector">
   <meta name="keywords" content="">
   
-    <meta name="description" content="arm基础">
+    <meta name="description" content="MIPI D-PHY 协议">
 <meta property="og:type" content="article">
-<meta property="og:title" content="arm64指令集-加载与储存">
-<meta property="og:url" content="http://example.com/2022/11/21/arm64%E6%8C%87%E4%BB%A4%E9%9B%86-%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%82%A8%E5%AD%98%E6%8C%87%E4%BB%A4/index.html">
+<meta property="og:title" content="MIPI D-PHY Interfaces Protocol">
+<meta property="og:url" content="http://example.com/2022/12/01/mipi%20d-phy/index.html">
 <meta property="og:site_name" content="Hector&#39;s Blog Page">
-<meta property="og:description" content="arm基础">
+<meta property="og:description" content="MIPI D-PHY 协议">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-11-21T15:16:41.000Z">
-<meta property="article:modified_time" content="2022-11-22T15:42:52.097Z">
+<meta property="og:image" content="http://example.com/images/mipi_images/mipi%E9%80%9A%E4%BF%A1%E7%BB%93%E6%9E%84%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/lane%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/ppi%E5%92%8Cappi.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/%E6%B5%81%E7%A8%8B%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/lane%20module%20arch.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/lane%20type%20descriptor.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/%E9%85%8D%E7%BD%AE%E5%9B%BE%E4%BE%8B.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/PHY%20Configuration%20with%20a%20Single%20Data%20Lane.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/PHY%20Configuration%20with%20Multiple%20Data%20Lanes.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/PHY%20Configurations%20with%20a%20Single%20Data%20Lane2.png">
+<meta property="og:image" content="http://example.com/images/mipi_images/undirectional%20configuration%20with%20a%20multiple%20data%20lane2.png">
+<meta property="article:published_time" content="2022-12-01T08:34:43.000Z">
+<meta property="article:modified_time" content="2022-12-01T09:49:25.954Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/mipi_images/mipi%E9%80%9A%E4%BF%A1%E7%BB%93%E6%9E%84%E5%9B%BE.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>arm64指令集-加载与储存 - Hector&#39;s Blog Page</title>
+  <title>MIPI D-PHY Interfaces Protocol - Hector&#39;s Blog Page</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +226,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">arm64指令集-加载与储存</span>
+            <span id="subtitle">MIPI D-PHY Interfaces Protocol</span>
           
         </div>
 
@@ -227,8 +239,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-11-21 23:16" pubdate>
-          2022年11月21日 晚上
+        <time datetime="2022-12-01 16:34" pubdate>
+          2022年12月1日 下午
         </time>
       </span>
     
@@ -239,7 +251,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.9k 字
+          2.4k 字
         
       </span>
     
@@ -250,7 +262,7 @@
         
         
         
-          16 分钟
+          20 分钟
         
       </span>
     
@@ -299,116 +311,197 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">arm64指令集-加载与储存</h1>
+            <h1 style="display: none">MIPI D-PHY Interfaces Protocol</h1>
             
             
               <div class="markdown-body">
                 
                 <div align="center">
 
-<h1 id="加载与储存指令"><a href="#加载与储存指令" class="headerlink" title="加载与储存指令"></a>加载与储存指令</h1></div>
+<h3 id="并发与竞争简介"><a href="#并发与竞争简介" class="headerlink" title="并发与竞争简介"></a>并发与竞争简介</h3></div>
 
-<h2 id="加载与存储指令"><a href="#加载与存储指令" class="headerlink" title="加载与存储指令"></a>加载与存储指令</h2><ul>
-<li>常见内存加载指令是LDR指令，储存指令是STR指令，基本格式如下：<ul>
-<li>LDR 目标寄存器，&lt;存储器地址&gt;   &#x2F;&#x2F;把存储器地址中的数据加载到目标寄存器中</li>
-<li>STR 源寄存器，&lt;存储器地址&gt;     &#x2F;&#x2F;把源寄存器中的数据存储到存储器地址中</li>
+
+<div align="center">
+
+<h1 id="MIPI-D-PHY"><a href="#MIPI-D-PHY" class="headerlink" title="MIPI D-PHY"></a>MIPI D-PHY</h1></div>
+
+<h2 id="1-MIPI-D-PHY介绍"><a href="#1-MIPI-D-PHY介绍" class="headerlink" title="1 MIPI D-PHY介绍"></a>1 MIPI D-PHY介绍</h2><ul>
+<li><p>D-PHY的字面意思是设计目标为500Mbits&#x2F;s的物理接口</p>
+</li>
+<li><p>两个通过MIPI通信的硬件结构如下图：</p>
+<p>  <img src="/../images/mipi_images/mipi%E9%80%9A%E4%BF%A1%E7%BB%93%E6%9E%84%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="mipi通信"> </p>
+<ul>
+<li>PHY LAYER为物理层 （如D-PHY）</li>
+<li>low level protocol和lane management为中间层（如DSI和CSI）</li>
+<li>application为应用层</li>
+<li>通信的最底层由多个lane组成</li>
+<li>D-PHY支持最少1 x clock lane + 1x data lane,最多1 x clock lane + 4 x data lane</li>
+<li>clock lane总是单向的，data lane可以双向，但在实际应用中，只有DSI lane0实现为低速双向</li>
 </ul>
 </li>
-<li>加载和存储指令的寻址模式：</li>
+<li><p>lane内部结构如下图：</p>
+<p>  <img src="/../images/mipi_images/lane%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="lane图"></p>
+<ul>
+<li>LP–low power，主要用于控制(CTRL)或者其他可选的用途</li>
+<li>HS–high speed，主要用于高速数据(DATA)传输</li>
+<li>LP和HS均可配置为双向</li>
+<li><mark>DSI实际配置中，DATA0的LP双向，HS单向，其他的DATA LANE的LP和HS均为单向</mark></li>
 </ul>
+</li>
+<li><p>HS模式和LP模式区别</p>
 <table>
 <thead>
 <tr>
-<th align="center">寻址模式</th>
-<th align="center">描述</th>
+<th align="center"></th>
+<th align="center">HS模式</th>
+<th align="center">LP模式</th>
 </tr>
 </thead>
 <tbody><tr>
-<td align="center">基地址模式</td>
-<td align="center">[Xn]</td>
+<td align="center">传输模式</td>
+<td align="center">差分信号</td>
+<td align="center">单端信号</td>
 </tr>
 <tr>
-<td align="center">基地址加偏移量模式</td>
-<td align="center">[Xn,#offset]</td>
+<td align="center">传输速度</td>
+<td align="center">80M-1.5Gbps</td>
+<td align="center">&lt;10Mbps</td>
 </tr>
 <tr>
-<td align="center">前变基模式</td>
-<td align="center">[Xn,#offset]!</td>
-</tr>
-<tr>
-<td align="center">后变基模式</td>
-<td align="center">[Xn],#offset</td>
-</tr>
-<tr>
-<td align="center">PC相对地址模式</td>
-<td align="center">&lt; label &gt;</td>
+<td align="center">功耗</td>
+<td align="center">大</td>
+<td align="center">小</td>
 </tr>
 </tbody></table>
-<ol>
-<li>基地址模式<ul>
-<li>LDR Xt,[Xn]  &#x2F;&#x2F;以Xn寄存器中的数据作为内存地址，加载此地址中的数据到Xt寄存器</li>
-<li>STR Xt,[Xn]  &#x2F;&#x2F;以Xn寄存器中的数据作为内存地址，将Xt中的内容存储到此内存地址中</li>
-</ul>
 </li>
-<li>基地址加偏移量模式<ul>
-<li>LDR Xt,[Xn,#offset] &#x2F;&#x2F;以Xn寄存器中的数据加上offset的值作为一个内存地址，加载此地址中的数据到Xt寄存器</li>
-<li>STR Xt,[Xn,#offset] &#x2F;&#x2F;以Xn寄存器中的数据加上offset的值作为一个内存地址，将Xt中的内容存储到此内存地址中</li>
 </ul>
-</li>
-<li>基地址扩展模式<ul>
-<li>LDR &lt; Xt &gt;, [&lt; Xn &gt;,(&lt; Xm &gt;){,&lt; extend &gt;{&lt; amount &gt;}}]</li>
-<li>STR &lt; Xt &gt;, [&lt; Xn &gt;,(&lt; Xm &gt;){,&lt; extend &gt;{&lt; amount &gt;}}]<ul>
-<li>Xt：目标寄存器</li>
-<li>Xn：基地址寄存器</li>
-<li>Xm：表示偏移的寄存器</li>
-<li>extend：扩展&#x2F;移位指示符，默认LSL，可选LSL、UXTW、SXTW、SXTX</li>
-<li>amount：索引偏移量，只能为#0或者#3</li>
-</ul>
-</li>
-<li>LDR X0, [X1, X2]  &#x2F;&#x2F;内存地址为X1的值加上X2的值，将此内存地址中的值加载到X0寄存器</li>
-<li>LDR X0, [X1, X2, LSL #3]  &#x2F;&#x2F;内存地址为X1的值加上（X2的值&lt;&lt;3），将此内存地址中的值加载到X0寄存器</li>
-<li>LDR X0, [X1, W2 SXTW]  &#x2F;&#x2F;先对W2中的值做有符号扩展，再和X1的值相加，结果作为内存地址，将此内存地址中的值加载到X0寄存器</li>
-</ul>
-</li>
-<li>前变基模式<ul>
-<li>LDR &lt; Xt &gt;,[&lt; Xn &gt;, #&lt; simm &gt;]!  &#x2F;&#x2F;先更新Xn寄存器的值为Xn寄存器的值加simm，然后以新的Xn寄存器的值作为地址，加载该地址的数据到Xt寄存器</li>
-</ul>
-</li>
-<li>后变基模式<ul>
-<li>LDR &lt; Xt &gt;,[&lt; Xn &gt;], #&lt; simm &gt; &#x2F;&#x2F;首先以Xn寄存器的值作为地址，加载该地址的数据到Xt寄存器，然后更新Xn寄存器的值为Xn寄存器的值加simm</li>
-</ul>
-</li>
-<li>PC相对地址模式<ul>
-<li>LDR &lt; Xt &gt;, &lt; label &gt; &#x2F;&#x2F;读取label所在内存地址的内容到Xt寄存器中，label地址必须在当前PC前后1M的地址范围内</li>
-<li>&#96;&#96;&#96;s<br>my_data:<br>    .word 0x40<br>ldr x0, my_data<br>&#x2F;&#x2F;将my_data标签中的数据0x40载入x0寄存器<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs arduino">-    ```s<br>     <span class="hljs-meta">#<span class="hljs-keyword">define</span> MY_LABEL 0x20</span><br>     ldr x6, MY_LABEL<br>     <span class="hljs-comment">//以当前PC的值加上0x20作为内存地址，将此地址中的值载入x6寄存器中</span><br></code></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ol>
-<h2 id="出栈与入栈"><a href="#出栈与入栈" class="headerlink" title="出栈与入栈"></a>出栈与入栈</h2><p>armv8取消了push与pop指令，使用ldr和str指令完成出入栈的操作</p>
-<ul>
-<li>入栈<ul>
-<li>str x29,[sp,#-8]!</li>
-<li>前变基 首先sp的值减8，栈空间是向下增长，也就是新增8byte的栈空间，然后将x29的值写入当前sp指针指向的地址处，也就是栈顶</li>
-</ul>
-</li>
-<li>出栈<ul>
-<li>ldr x29,[sp],#8</li>
-<li>后变基 首先将sp的值指向的内存中的数据存入x29，然后sp的值加8，也就是释放8byte的栈空间</li>
+<h2 id="2-主从结构"><a href="#2-主从结构" class="headerlink" title="2 主从结构"></a>2 主从结构</h2><ul>
+<li>MIPI连接包含一个master设备和一个slave设备，主设备向clock lane提供高速时钟信号，是主要的时钟源；slave设备是主要的设备接受端。从主设备到从设备为正向传输，所有的情况下时钟信号都保持正向传输，只有双向data lane才能反向传输。</li>
+<li>PPI(phy protocol interfaces)和APPI(abstracted phy protocol interfaces)<ul>
+<li><img src="/../images/mipi_images/ppi%E5%92%8Cappi.png" srcset="/img/loading.gif" lazyload alt="ppi&amp;appi"></li>
+<li>PHY addapter layer将所有的通道、时钟单元和PPI连接在一起</li>
 </ul>
 </li>
 </ul>
-<h2 id="MOV指令"><a href="#MOV指令" class="headerlink" title="MOV指令"></a>MOV指令</h2><blockquote>
-<p>mov指令用于寄存器之间的搬移和立即数搬移</p>
+<h2 id="3-Lane选项"><a href="#3-Lane选项" class="headerlink" title="3 Lane选项"></a>3 Lane选项</h2><blockquote>
+<p>一个PHY包括一个clock lane和一个或者多个data lane，正向传输时所有的data lane都应该支持高速传输和Escape Mode</p>
 </blockquote>
 <ul>
-<li><p>mov &lt; Xd &gt;, &lt; Xn &gt;</p>
-</li>
-<li><p>mov &lt; Xd &gt;, #&lt; imm &gt;</p>
+<li>data lane的两种类型<ul>
+<li><p>双向通信(bi-directional)(必须包含以下one or both 反向通信选项)</p>
 <ul>
-<li>立即数只能为16位的立即数或者16位立即数左移16位、32位、48位后的立即数</li>
+<li>高速反向数据通信</li>
+<li>low power 反向 escape mode(可选包含或者排除 low power data trassmission(LPDT))</li>
 </ul>
-<!--PC版--></li>
+</li>
+<li><p>单向通信(undirectional)</p>
+</li>
+<li><p>所有的lanes都应该包含支持ULPS(ultra low power state休眠模式)和triggers in the forward direction的escape mode</p>
+</li>
+<li><p>对于双向lane来说，应该为其每个方向设置单独的escape mode</p>
+</li>
+<li><p>PHY配置的选项为：</p>
+<ol>
+<li>单个或多个lane</li>
+<li>双向或者单向lane（对每个lane设置）</li>
+<li>支持的反向通信类型（对每个lane设置）</li>
+<li>escape mode支持的功能</li>
+<li>数据传输使用8bit原始数据或者8b9b编码符号</li>
+</ol>
+</li>
+<li><p>配置流程图如下</p>
+<p><img src="/../images/mipi_images/%E6%B5%81%E7%A8%8B%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="配置流程图"></p>
+</li>
 </ul>
+</li>
+</ul>
+<h2 id="4-lane-module-types"><a href="#4-lane-module-types" class="headerlink" title="4 lane module types"></a>4 lane module types</h2><blockquote>
+<p>lane module需要的功能取决于lane的类型和lane处于连接中的（主或从）哪一侧</p>
+</blockquote>
+<ul>
+<li><p>Lane Module Architecture</p>
+<p><img src="/../images/mipi_images/lane%20module%20arch.png" srcset="/img/loading.gif" lazyload alt="lane modue arch"></p>
+<ul>
+<li>“control and interface logic” – CIL，其功能取决于lane type 和 lane side</li>
+</ul>
+</li>
+<li><p>Lane types</p>
+<p><img src="/../images/mipi_images/lane%20type%20descriptor.png" srcset="/img/loading.gif" lazyload alt="lane type descroptor"></p>
+<ul>
+<li>推荐使用的PHY协议接口包括字节格式（也就是前面说的8bit原始数据而不是8b9b编码）的数据输入和输出，输入&#x2F;输出时钟信号和控制信号。</li>
+<li>控制信号包括：<ul>
+<li>请求</li>
+<li>握手</li>
+<li>测试</li>
+<li>初始化</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>单向data lane</p>
+<ul>
+<li>mater module: at least a HS-TX, a LP-TX, and a CIL-MFXN function</li>
+<li>slave module: at least a HS-RX, a LP-RX and a CIL-SFXN</li>
+</ul>
+</li>
+<li><p>双向data lane</p>
+<blockquote>
+<p>双向data lane包含一些反向通信的格式：高速反向通信、reverse escape mode，取决于lane module中包含的反向通信方法</p>
+</blockquote>
+<ul>
+<li>Bi-directional Data Lane without High-Speed Reverse Communication 包含以下：<ul>
+<li>a reverse escape mode</li>
+<li>master module: HS-TX, LP-TX, LP-RX, LP-CD, and CIL-MFXY</li>
+<li>slave module: HS-RX, LP-RX, LP-TX, LP-CD and CIL-SFXY</li>
+</ul>
+</li>
+<li>Bi-directional Data Lane with High-Speed Reverse Communication 包含以下：<ul>
+<li>a reverse Escape mode</li>
+<li>master module: HS-TX, HS-RX, LP-TX, LP-RX, LP-CD, and CIL-MRXX</li>
+<li>slave module: HS-RX, HS-TX, LP-RX, LP-TX, LP-CD and CIL-SRXX</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>clock lane</p>
+<ul>
+<li>master module: HS-TX, LP-TX, and CIL-MCNN</li>
+<li>slave module: HS-RX, LP-RX and CIL-SCNN</li>
+</ul>
+</li>
+</ul>
+<h2 id="常见的PHY配置"><a href="#常见的PHY配置" class="headerlink" title="常见的PHY配置"></a>常见的PHY配置</h2><ul>
+<li><p>配置图例</p>
+<p><img src="/../images/mipi_images/%E9%85%8D%E7%BD%AE%E5%9B%BE%E4%BE%8B.png" srcset="/img/loading.gif" lazyload alt="配置图例"></p>
+</li>
+<li><p>单向配置</p>
+<blockquote>
+<p>所有的单向配置都由一个clock Lane和一个或者多个undirectional data lane组成</p>
+</blockquote>
+<ul>
+<li><p>PHY Configuration with a Single Data Lane</p>
+<p><img src="/../images/mipi_images/PHY%20Configuration%20with%20a%20Single%20Data%20Lane.png" srcset="/img/loading.gif" lazyload alt="undirectional configuration with a signal data lane"></p>
+</li>
+<li><p>PHY Configuration with Multiple Data Lanes</p>
+<p><img src="/../images/mipi_images/PHY%20Configuration%20with%20Multiple%20Data%20Lanes.png" srcset="/img/loading.gif" lazyload alt="undirectional configuration with a multiple data lane"></p>
+</li>
+</ul>
+</li>
+<li><p>双向半双工配置</p>
+<blockquote>
+<p>所有的单向配置都由一个clock Lane和一个或者多个bi-directional data lane组成</p>
+</blockquote>
+<ul>
+<li><p>PHY Configurations with a Single Data Lane</p>
+<p><img src="/../images/mipi_images/PHY%20Configurations%20with%20a%20Single%20Data%20Lane2.png" srcset="/img/loading.gif" lazyload alt="undirectional configuration with a signal data lane"></p>
+</li>
+<li><p>PHY Configuration with Multiple Data Lanes</p>
+<p><img src="/../images/mipi_images/undirectional%20configuration%20with%20a%20multiple%20data%20lane2.png" srcset="/img/loading.gif" lazyload alt="undirectional configuration with a multiple data lane"></p>
+</li>
+</ul>
+</li>
+</ul>
+<!--PC版-->
 <div id="SOHUCS" ></div>
 <script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script>
 <script type="text/javascript">
@@ -434,8 +527,15 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
       <span class="category-chain">
         
-  <a href="/categories/Arm/" class="category-chain-item">Arm</a>
+  <a href="/categories/Hardware/" class="category-chain-item">Hardware</a>
   
+  
+    <span>></span>
+    
+  <a href="/categories/Hardware/MIPI/" class="category-chain-item">MIPI</a>
+  
+  
+
   
 
       </span>
@@ -454,8 +554,8 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>arm64指令集-加载与储存</div>
-      <div>http://example.com/2022/11/21/arm64指令集-加载与储存指令/</div>
+      <div>MIPI D-PHY Interfaces Protocol</div>
+      <div>http://example.com/2022/12/01/mipi d-phy/</div>
     </div>
     <div class="license-meta">
       
@@ -467,7 +567,7 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年11月21日</div>
+          <div>2022年12月1日</div>
         </div>
       
       
@@ -499,18 +599,12 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/11/27/linux%20tty%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/" title="linux tty 串口驱动">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">linux tty 串口驱动</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/11/21/armv8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%9F%BA%E7%A1%80/" title="armv8体系结构基础">
-                        <span class="hidden-mobile">armv8体系结构基础</span>
+                      <a href="/2022/11/27/linux%20tty%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8/" title="linux tty 串口驱动">
+                        <span class="hidden-mobile">linux tty 串口驱动</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -528,8 +622,8 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
       <script type="text/javascript">
         var disqus_config = function() {
-          this.page.url = 'http://example.com/2022/11/21/arm64%E6%8C%87%E4%BB%A4%E9%9B%86-%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%82%A8%E5%AD%98%E6%8C%87%E4%BB%A4/';
-          this.page.identifier = '/2022/11/21/arm64%E6%8C%87%E4%BB%A4%E9%9B%86-%E5%8A%A0%E8%BD%BD%E4%B8%8E%E5%82%A8%E5%AD%98%E6%8C%87%E4%BB%A4/';
+          this.page.url = 'http://example.com/2022/12/01/mipi%20d-phy/';
+          this.page.identifier = '/2022/12/01/mipi%20d-phy/';
         };
         Fluid.utils.loadComments('#disqus_thread', function() {
           var d = document, s = d.createElement('script');
