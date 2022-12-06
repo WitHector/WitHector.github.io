@@ -44,7 +44,7 @@
 <meta property="og:image" content="http://example.com/images/mipi_images/Global%20Operation%20Timing%20Parameters2.png">
 <meta property="og:image" content="http://example.com/images/mipi_images/Global%20Operation%20Timing%20Parameters3.png">
 <meta property="article:published_time" content="2022-12-03T13:51:17.000Z">
-<meta property="article:modified_time" content="2022-12-03T14:06:35.158Z">
+<meta property="article:modified_time" content="2022-12-06T14:38:28.246Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://example.com/images/mipi_images/mipi%E9%80%9A%E4%BF%A1%E7%BB%93%E6%9E%84%E5%9B%BE.png">
@@ -336,7 +336,7 @@
 <p>  <img src="/../images/mipi_images/mipi%E9%80%9A%E4%BF%A1%E7%BB%93%E6%9E%84%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="mipi通信"> </p>
 <ul>
 <li>PHY LAYER为物理层 （如D-PHY）</li>
-<li>low level protocol和lane management为中间层（如DSI和CSI）</li>
+<li>low level protocol和lane management为中间层</li>
 <li>application为应用层</li>
 </ul>
 </li>
@@ -344,7 +344,7 @@
 <h3 id="1-2-关于D-PHY"><a href="#1-2-关于D-PHY" class="headerlink" title="1.2 关于D-PHY"></a>1.2 关于D-PHY</h3><ul>
 <li><p>DSI - Display Serial Interface (主机与显示模块之间的高速串行接口)</p>
 </li>
-<li><p>D-PHY为DSI提供一个物理层定义</p>
+<li><p>D-PHY为DSI提供一个物理接口 (CSI也是D-PHY)</p>
 <p><img src="/../images/mipi_images/ppi%E5%92%8Cappi.png" srcset="/img/loading.gif" lazyload alt="ppi&amp;appi"></p>
 <ul>
 <li><p>MIPI连接包含一个master设备和一个slave设备，主设备向clock lane提供高速时钟信号，是主要的时钟源；slave设备是主要的设备接受端。从主设备到从设备为正向传输，所有的情况下时钟信号都保持正向传输，只有双向data lane才能反向传输。</p>
@@ -614,7 +614,7 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
       <span class="category-chain">
         
-  <a href="/categories/Hardware/" class="category-chain-item">Hardware</a>
+  <a href="/categories/MIPI/" class="category-chain-item">MIPI</a>
   
   
 
@@ -678,6 +678,12 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2022/12/06/dsi%20introduction/" title="dsi introduction">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">dsi introduction</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
