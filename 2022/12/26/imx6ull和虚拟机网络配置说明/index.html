@@ -16,37 +16,23 @@
   <meta name="author" content="Hector">
   <meta name="keywords" content="">
   
-    <meta name="description" content="MIPI D-PHY协议重点">
+    <meta name="description" content="网络配置说明">
 <meta property="og:type" content="article">
-<meta property="og:title" content="dsi introduction">
-<meta property="og:url" content="http://example.com/2022/12/06/dsi%20introduction/index.html">
+<meta property="og:title" content="imx6ull和虚拟机网络配置说明">
+<meta property="og:url" content="http://example.com/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/index.html">
 <meta property="og:site_name" content="Hector&#39;s Blog Page">
-<meta property="og:description" content="MIPI D-PHY协议重点">
+<meta property="og:description" content="网络配置说明">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/dsi_images/%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/dsi%E5%88%86%E5%B1%82%E5%9B%BE.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/%E9%80%9A%E9%81%93%E5%88%86%E9%85%8D%E5%85%B3%E7%B3%BB.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/%E6%95%B0%E6%8D%AE%E5%8C%85%E6%A0%BC%E5%BC%8F.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/transmission%20packets.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/EoTp%20transmisson%20packet.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/non%20burst%20with%20sync%20.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/non%20burst%20with%20sync%20events.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/burst%20mode.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/Parameters.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/parameters2.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/packet%20data%20type1.png">
-<meta property="og:image" content="http://example.com/images/dsi_images/packet%20data%20type%202.png">
-<meta property="article:published_time" content="2022-12-06T14:37:29.000Z">
-<meta property="article:modified_time" content="2022-12-06T14:48:02.194Z">
+<meta property="article:published_time" content="2022-12-26T08:53:31.000Z">
+<meta property="article:modified_time" content="2022-12-16T09:49:21.059Z">
 <meta property="article:author" content="Hector">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/dsi_images/%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>dsi introduction - Hector&#39;s Blog Page</title>
+  <title>imx6ull和虚拟机网络配置说明 - Hector&#39;s Blog Page</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -222,13 +208,13 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+     style="background: url('/images/linux.png') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">dsi introduction</span>
+            <span id="subtitle">imx6ull和虚拟机网络配置说明</span>
           
         </div>
 
@@ -241,8 +227,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-12-06 22:37" pubdate>
-          2022年12月6日 晚上
+        <time datetime="2022-12-26 16:53" pubdate>
+          2022年12月26日 下午
         </time>
       </span>
     
@@ -253,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.6k 字
+          1k 字
         
       </span>
     
@@ -264,7 +250,7 @@
         
         
         
-          31 分钟
+          9 分钟
         
       </span>
     
@@ -313,180 +299,27 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">dsi introduction</h1>
+            <h1 style="display: none">imx6ull和虚拟机网络配置说明</h1>
             
             
               <div class="markdown-body">
                 
-                <div align="center">
-
-<h1 id="DSI-Introduction"><a href="#DSI-Introduction" class="headerlink" title="DSI Introduction"></a>DSI Introduction</h1><p><em>参考文档：《MIPI_DSI_Specification_V1.02.00》</em></p>
-</div>
-
-<h2 id="1-MIPI-DSI-简介"><a href="#1-MIPI-DSI-简介" class="headerlink" title="1 MIPI DSI 简介"></a>1 MIPI DSI 简介</h2><ul>
-<li><p>Display Serial Interface，用于显示模块的一个串行接口，基于MIPI协议而产生，兼容DPI(Display Pixel Interface)、DBI(Display Bus Interface)、DCS(Display Command Set</p>
+                <ol>
+<li><p>硬件结构拓扑：开发板和PC连接同一个路由器，电脑通过WIFI接入，开发板使用网线与路由器直接连接（开发板在UBOOT阶段只能使用物理网口，不能使用WIFI，UBOOT不支持WiFi驱动）</p>
 </li>
-<li><p>接口定义示意图如下</p>
-<p>  <img src="/../images/dsi_images/%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89%E7%A4%BA%E6%84%8F%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="接口定义示意图"></p>
+<li><p>打开虚拟机软件，本人使用的是virtual box，选择虚拟机网络配置为桥接网卡，网卡选择为当前电脑使用的WIFI网卡</p>
 </li>
-<li><p>MIPI-DSI具备高速模式和低速模式两种工作模式，全部数据通道（1~4组数据通道）都可以用于单向的高速传输，但只有第一个数据通道(DATA Lane 0)才可用于低速双向传输<em>关于高速模式和低速模式参考D-PHY的那篇blog</em></p>
+<li><p>启动UBUNTU，进入UBUNTU的网络设置，配置其IPV4网络，将其设置为手动，设置静态IP，IP必须与当前当前WIFI的IP4网段相同</p>
 </li>
-</ul>
-<h2 id="2-DSI分层"><a href="#2-DSI分层" class="headerlink" title="2 DSI分层"></a>2 DSI分层</h2><ul>
-<li><p>DSI分层结构图（与D-PHY中的第一张图相同，D-PHY完成其物理层的工作）</p>
-<p>  <img src="/../images/dsi_images/dsi%E5%88%86%E5%B1%82%E5%9B%BE.png" srcset="/img/loading.gif" lazyload alt="DSI分层图"></p>
+<li><p>配置ubuntu的nfs，<code>sudo vi /etc/hosts</code>，将其中的ip更改为开发板要设定的ip，也必须处于同一网段</p>
 </li>
-</ul>
-<h3 id="2-1-PHY-Layer-物理层，上一篇blog已作详细介绍"><a href="#2-1-PHY-Layer-物理层，上一篇blog已作详细介绍" class="headerlink" title="2.1 PHY-Layer:物理层，上一篇blog已作详细介绍"></a>2.1 PHY-Layer:物理层，上一篇blog已作详细介绍</h3><h3 id="2-2-Lane-Management"><a href="#2-2-Lane-Management" class="headerlink" title="2.2 Lane Management"></a>2.2 Lane Management</h3><ul>
-<li><p>通道管理层，对于Master来说，负责将所有的数据按照一定顺序分配给所有的数据Lane；对于Slave来说，负责从所有的Data Lane接收数据后将数据重组为原始数据</p>
+<li><p>开发板上电，修改uboot中的环境变量</p>
+ <figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs gams"><span class="hljs-function"><span class="hljs-title">setenv</span></span> ipaddr ... <span class="hljs-comment">//开发板ip</span><br><span class="hljs-function"><span class="hljs-title">setenv</span></span> severip ... <span class="hljs-comment">//虚拟机ip</span><br><span class="hljs-function"><span class="hljs-title">setenv</span></span> gatewayip ... <span class="hljs-comment">//网关</span><br>saveenv <br></code></pre></td></tr></table></figure></li>
+<li><p>修改bootcmd 和 bootargs</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">setenv</span> bootcmd &#x27;nfs <span class="hljs-number">80800000</span> <span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/zImage;nfs <span class="hljs-number">83000000</span> <span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/imx6ull-alientek-emmc.dtb;bootz <span class="hljs-number">80800000</span> - <span class="hljs-number">83000000</span>&#x27; //其中的ip需要根据虚拟机ip自行配置一下<br><span class="hljs-attribute">setenv</span> bootargs &#x27;console=ttymxc0,<span class="hljs-number">115200</span> root=/dev/nfs nfsroot=<span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/rootfs,proto=tcp rw ip=<span class="hljs-number">192.168.6.191:192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">6</span>.<span class="hljs-number">194</span>:<span class="hljs-number">192.168.6.1:255</span>.<span class="hljs-number">255</span>.<span class="hljs-number">255</span>.<span class="hljs-number">0</span>::eth0:<span class="hljs-literal">off</span>&#x27; //其中的ip需要自行配置一下 最后一部分几个连续的ip分别是开发板ip，虚拟机ip，网关ip，掩码<br><span class="hljs-attribute">saveenv</span> <br></code></pre></td></tr></table></figure></li>
+<li><p>配置完成后先在开发板ping虚拟机ip，如果能ping通基本上就没啥问题了，直接重启，或者执行boot命令即可</p>
 </li>
-<li><p>通道分配关系如下图：</p>
-<p>  <img src="/../images/dsi_images/%E9%80%9A%E9%81%93%E5%88%86%E9%85%8D%E5%85%B3%E7%B3%BB.png" srcset="/img/loading.gif" lazyload alt="通道分配关系"></p>
-</li>
-</ul>
-<h3 id="2-3-Low-Level-Protocol"><a href="#2-3-Low-Level-Protocol" class="headerlink" title="2.3 Low Level Protocol"></a>2.3 Low Level Protocol</h3><ul>
-<li><p>协议层，负责对数据进行封包（Master）或者错误校验（Slave）</p>
-</li>
-<li><p>信息传输采用两种数据格式–长数据包(long packet)和短数据包(short packet),发送数据时根据数据类型和内容对数据进行封装，完成ECC码和CRC码的添加；接收数据的时候根据ECC码和CRC校验码对数据包进行校验。</p>
-</li>
-<li><p>两种数据包的结构如下图所示：</p>
-<p>  <img src="/../images/dsi_images/%E6%95%B0%E6%8D%AE%E5%8C%85%E6%A0%BC%E5%BC%8F.png" srcset="/img/loading.gif" lazyload alt="数据包格式"></p>
-</li>
-<li><p>短数据包(short packet)</p>
-<ul>
-<li>只有数据包头</li>
-<li>固定长度四个字节<ul>
-<li>byte3：Data Identifier (DI)，0-5bit描述数据类型(详细见附录)，6-7bit描述通道号</li>
-<li>byte1-2：Packet Data，命令或者数据（有效荷载），Data0为寄存器地址，Data1为值，如果不需要值将Data1置为0</li>
-<li>byte0：ECC码</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>长数据包(long packet)</p>
-<ul>
-<li>不固定长度，长度范围为 4+(0<del>65535)+2 &#x3D; 6</del>65541bytes</li>
-<li>包头由DI、两字节的WordCount（数据长度，不含Checksum）和一个字节的ECC码组成</li>
-<li>校验和为2bytes</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-4-Application"><a href="#2-4-Application" class="headerlink" title="2.4 Application"></a>2.4 Application</h3><ul>
-<li>应用层，在此层对命令和数据进行初步编码转化为MIPI-DSI所规定的格式并发送（Master）；图将接收的数据还原为应用模块所支持的数据格式及时序要求（Slave）</li>
-</ul>
-<h2 id="3-Command-Mode-and-Video-Mode"><a href="#3-Command-Mode-and-Video-Mode" class="headerlink" title="3 Command Mode and Video Mode"></a>3 Command Mode and Video Mode</h2><ul>
-<li>command mode的屏幕一般就是一些单片机或者低端产品上会用的液晶屏幕，它们在发送图像和命令时需要先制定写入地址。而我们日常所使用到的mipi液晶屏基本都是video mode的屏幕，刷新时是整个屏幕的进行刷新，不需要我们去先指定地址。</li>
-<li>同步刷新机制：<ul>
-<li>command mode：通过TE pin来同步</li>
-<li>video mode：通过将v-sync及h-sync信号包含在数据包里发送给panel来做同步</li>
-</ul>
-</li>
-<li>Command Mode：对于本身有framebuffer的外设，使用command Mode向其指定地址写入数据，使其更新显示屏幕，主要用与静态显示的屏幕，更新频率较低，需要双向接口</li>
-<li>video mode：不间断的向外设发送像素流数据，实时更新，多用于动态图像显示，更新频率高，数据只能在HS Mode下传输（有些video mode架构中存在简单的时钟控制器和部分framebuffer，在低功耗时允许保持部分屏幕或者以低分辨率显示屏幕，从而达到允许关闭接口降低功耗的目的），为了降低系统复杂性和成本，至工作在video mode下的系统可能仅仅使用一个单向数据通道。</li>
-</ul>
-<h2 id="4-时钟管理"><a href="#4-时钟管理" class="headerlink" title="4 时钟管理"></a>4 时钟管理</h2><ul>
-<li>DSI clock是从host到外设的时钟信号：<ul>
-<li>DSI Bit　Clock:作源同步位时钟，用于捕获接收端接口中的串行数据位</li>
-<li>Byte Clock：在协议层和应用层接口之间作字节时钟，在协议层和应用层之间的操作都与此字节时钟保持同步</li>
-<li>Application Clock：DSI位时钟的分频版本可用于外围设备的其他时钟功能。这些“应用程序时钟”可能需要在没有串行数据传输时运行，或者它们可能需要持续运行（连续时钟）以支持外围设备的有源电路。（非标）</li>
-</ul>
-</li>
-<li>时钟计算公式：<mark>dsi clk &#x3D; Bitclk &#x2F; 2  &#x3D; H-total x V-total x fps x 位深 &#x2F; lane number &#x2F; 2</mark><ul>
-<li>H-total：行所有像素点 行分辨率还要加上HSYNC和HBP、HFP</li>
-<li>V-total: 列所有限速点 列分辨率还要加上VSYNC和VBP、VFP</li>
-<li>&#x2F;2的原因是MIPI采用的双边沿触发，一个时钟脉冲会触发两次</li>
-<li>fps：帧数</li>
-<li>位深：每个像素的数据位，rgb888-24 rgb565-16</li>
-</ul>
-</li>
-</ul>
-<h2 id="5-数据传输方法"><a href="#5-数据传输方法" class="headerlink" title="5 数据传输方法"></a>5 数据传输方法</h2><ul>
-<li><p>最简单的传输状况，一个Transmiss包含一个packet，但是multiple packets时，由于每次HS mode传输间会插入LPS(Low-Power State)，这样效率会很低。所有有如下Separate transmission和Single Transmission两种传输方式，目的就是在一次Transmission中能狗传输多个packets</p>
-<p>  <img src="/../images/dsi_images/transmission%20packets.png" srcset="/img/loading.gif" lazyload alt="transmission packets"></p>
-</li>
-<li><p>DSI 协议层还提供了一个专用的short packet用于表示传输结束（EoTp-end of transmission packet）,这个packet默认是disable状态，enable方法没有在Specification文件中说明，用的比较少。</p>
-<p>  <img src="/../images/dsi_images/EoTp%20transmisson%20packet.png" srcset="/img/loading.gif" lazyload alt="EoTp transmission packets"></p>
-</li>
-</ul>
-<h2 id="6-video-mode-接口时序"><a href="#6-video-mode-接口时序" class="headerlink" title="6 video mode 接口时序"></a>6 video mode 接口时序</h2><ul>
-<li>video mode下的三种操作模式如下：</li>
-<li>下面图中顶部有圆弧的代表数据包，长方形的代表时序的状态</li>
-<li>video中用到的数据包有以下几种(具体packet见附录)<table>
-<thead>
-<tr>
-<th align="center">packet</th>
-<th align="center">description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">VSS</td>
-<td align="center">DSI Sync Event Packet: V Sync Start</td>
-</tr>
-<tr>
-<td align="center">VSE</td>
-<td align="center">DSI Sync Event Packet: V Sync End</td>
-</tr>
-<tr>
-<td align="center">BLLP</td>
-<td align="center">DSI Packet: Arbitrary sequence of non-restricted DSI packets or Low Power Mode incluing optional BTA</td>
-</tr>
-<tr>
-<td align="center">HSS</td>
-<td align="center">DSI Sync Event Packet: H Sync Start</td>
-</tr>
-<tr>
-<td align="center">HAS</td>
-<td align="center">DSI Blanking Packet: Horizontal Sync Active or Low Power Mode, No Data</td>
-</tr>
-<tr>
-<td align="center">HSE</td>
-<td align="center">DSI Sync Event Packet: H Sync End</td>
-</tr>
-<tr>
-<td align="center">HFP</td>
-<td align="center">DSI Blanking Packet: Horizontal Front Porch or Low Power Mode</td>
-</tr>
-<tr>
-<td align="center">HBP</td>
-<td align="center">DSI Blanking Packet: Horizontal Back Porch or Low Power Mode</td>
-</tr>
-<tr>
-<td align="center">RGB</td>
-<td align="center">DSI Packet: Arbitrary sequence of pixel stream and Null Packets</td>
-</tr>
-<tr>
-<td align="center">LPM</td>
-<td align="center">Low Power Mode incuding optional BTA</td>
-</tr>
-</tbody></table>
-</li>
-</ul>
-<h3 id="6-1-Non-Burst-Mode-with-Sync-Pulses"><a href="#6-1-Non-Burst-Mode-with-Sync-Pulses" class="headerlink" title="6.1 Non-Burst Mode with Sync Pulses"></a>6.1 Non-Burst Mode with Sync Pulses</h3><ul>
-<li><p>使用此格式，目标是通过DSI串行链路准确传达DPI类型的时序，包括匹配DPI像素传输速率和同步脉冲的宽度等，因此，使用传输同步脉冲的开始和结束的来定义同步周期。</p>
-<p>  <img src="/../images/dsi_images/non%20burst%20with%20sync%20.png" srcset="/img/loading.gif" lazyload alt="non burst with sync"></p>
-<ul>
-<li>HSA (Horizontal Sync Active)</li>
-<li>HBP (Horizontal Back Porch)</li>
-<li>HFP (Horizontal Front Porch)</li>
-<li>以上三个阶段一般由空数据包填充，且处于以上三个阶段时，Lane保持LP-11状态</li>
-</ul>
-</li>
-</ul>
-<h3 id="6-2-Non-Burst-Mode-with-Sync-Events"><a href="#6-2-Non-Burst-Mode-with-Sync-Events" class="headerlink" title="6.2 Non-Burst Mode with Sync Events"></a>6.2 Non-Burst Mode with Sync Events</h3><ul>
-<li><p>是 Non-Burst Mode with Sync Pulses的简化版，只传输同步脉冲的开始信号，外围设备可以根据需要从接收到的每个同步事件包中重新生成同步脉冲。</p>
-<p>  <img src="/../images/dsi_images/non%20burst%20with%20sync%20events.png" srcset="/img/loading.gif" lazyload alt="non burst with sync events"></p>
-</li>
-</ul>
-<h3 id="6-3-Burst-mode-用的最多"><a href="#6-3-Burst-mode-用的最多" class="headerlink" title="6.3 Burst mode(用的最多)"></a>6.3 Burst mode(用的最多)</h3><ul>
-<li>在horizontal 的时序是一样的情况下DSI会把连接的速度提升到Panel支持的最大速度。在这种模式下发送RGB数据包的时间被压缩，以留出更多的时间用来传送其他的数据。<br><img src="/../images/dsi_images/burst%20mode.png" srcset="/img/loading.gif" lazyload alt="burst mode"></li>
-</ul>
-<h3 id="6-4-参数"><a href="#6-4-参数" class="headerlink" title="6.4 参数"></a>6.4 参数</h3><p>  <img src="/../images/dsi_images/Parameters.png" srcset="/img/loading.gif" lazyload alt="parameters"><br>  <img src="/../images/dsi_images/parameters2.png" srcset="/img/loading.gif" lazyload alt="parameters2"></p>
-<h3 id="6-5-总结"><a href="#6-5-总结" class="headerlink" title="6.5 总结"></a>6.5 总结</h3><ul>
-<li>上述三种模式的时序框架都是相同的，VSA Lines、 VBP Lines 和 VFP Lines是帧同步时序所必须的，在Active Video Area里面对每一行进行刷新，每一行的数据包由行同步所必须的数据包加上RGB数据包组成</li>
-</ul>
-<h2 id="附录-Packet-Data-Types"><a href="#附录-Packet-Data-Types" class="headerlink" title="附录 Packet Data Types"></a>附录 Packet Data Types</h2><ul>
-<li>文档 MIPI_DSI_Specification_V1.02.00 第八章有关于各个data type的详细描述<br>  <img src="/../images/dsi_images/packet%20data%20type1.png" srcset="/img/loading.gif" lazyload alt="packet data type 1"><br>  <img src="/../images/dsi_images/packet%20data%20type%202.png" srcset="/img/loading.gif" lazyload alt="packet data type 2"></li>
-</ul>
+</ol>
 <!--PC版-->
 <div id="SOHUCS" ></div>
 <script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script>
@@ -513,8 +346,15 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
       <span class="category-chain">
         
-  <a href="/categories/MIPI/" class="category-chain-item">MIPI</a>
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
   
+  
+    <span>></span>
+    
+  <a href="/categories/Linux/nxp/" class="category-chain-item">nxp</a>
+  
+  
+
   
 
       </span>
@@ -533,8 +373,8 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>dsi introduction</div>
-      <div>http://example.com/2022/12/06/dsi introduction/</div>
+      <div>imx6ull和虚拟机网络配置说明</div>
+      <div>http://example.com/2022/12/26/imx6ull和虚拟机网络配置说明/</div>
     </div>
     <div class="license-meta">
       
@@ -546,7 +386,7 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年12月6日</div>
+          <div>2022年12月26日</div>
         </div>
       
       
@@ -578,18 +418,12 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/" title="imx6ull和虚拟机网络配置说明">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">imx6ull和虚拟机网络配置说明</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/12/03/mipi%20d-phy/" title="MIPI D-PHY">
-                        <span class="hidden-mobile">MIPI D-PHY</span>
+                      <a href="/2022/12/06/dsi%20introduction/" title="dsi introduction">
+                        <span class="hidden-mobile">dsi introduction</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -607,8 +441,8 @@ conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
     
       <script type="text/javascript">
         var disqus_config = function() {
-          this.page.url = 'http://example.com/2022/12/06/dsi%20introduction/';
-          this.page.identifier = '/2022/12/06/dsi%20introduction/';
+          this.page.url = 'http://example.com/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/';
+          this.page.identifier = '/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/';
         };
         Fluid.utils.loadComments('#disqus_thread', function() {
           var d = document, s = d.createElement('script');

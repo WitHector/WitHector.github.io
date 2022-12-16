@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>imx6ull和虚拟机网络配置说明</title>
+    <link href="/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/"/>
+    <url>/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/</url>
+    
+    <content type="html"><![CDATA[<ol><li><p>硬件结构拓扑：开发板和PC连接同一个路由器，电脑通过WIFI接入，开发板使用网线与路由器直接连接（开发板在UBOOT阶段只能使用物理网口，不能使用WIFI，UBOOT不支持WiFi驱动）</p></li><li><p>打开虚拟机软件，本人使用的是virtual box，选择虚拟机网络配置为桥接网卡，网卡选择为当前电脑使用的WIFI网卡</p></li><li><p>启动UBUNTU，进入UBUNTU的网络设置，配置其IPV4网络，将其设置为手动，设置静态IP，IP必须与当前当前WIFI的IP4网段相同</p></li><li><p>配置ubuntu的nfs，<code>sudo vi /etc/hosts</code>，将其中的ip更改为开发板要设定的ip，也必须处于同一网段</p></li><li><p>开发板上电，修改uboot中的环境变量</p> <figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs gams"><span class="hljs-function"><span class="hljs-title">setenv</span></span> ipaddr ... <span class="hljs-comment">//开发板ip</span><br><span class="hljs-function"><span class="hljs-title">setenv</span></span> severip ... <span class="hljs-comment">//虚拟机ip</span><br><span class="hljs-function"><span class="hljs-title">setenv</span></span> gatewayip ... <span class="hljs-comment">//网关</span><br>saveenv <br></code></pre></td></tr></table></figure></li><li><p>修改bootcmd 和 bootargs</p><figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">setenv</span> bootcmd &#x27;nfs <span class="hljs-number">80800000</span> <span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/zImage;nfs <span class="hljs-number">83000000</span> <span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/imx6ull-alientek-emmc.dtb;bootz <span class="hljs-number">80800000</span> - <span class="hljs-number">83000000</span>&#x27; //其中的ip需要根据虚拟机ip自行配置一下<br><span class="hljs-attribute">setenv</span> bootargs &#x27;console=ttymxc0,<span class="hljs-number">115200</span> root=/dev/nfs nfsroot=<span class="hljs-number">192.168.6.194</span>:/home/hector/linux/nfs_share/rootfs,proto=tcp rw ip=<span class="hljs-number">192.168.6.191:192</span>.<span class="hljs-number">168</span>.<span class="hljs-number">6</span>.<span class="hljs-number">194</span>:<span class="hljs-number">192.168.6.1:255</span>.<span class="hljs-number">255</span>.<span class="hljs-number">255</span>.<span class="hljs-number">0</span>::eth0:<span class="hljs-literal">off</span>&#x27; //其中的ip需要自行配置一下 最后一部分几个连续的ip分别是开发板ip，虚拟机ip，网关ip，掩码<br><span class="hljs-attribute">saveenv</span> <br></code></pre></td></tr></table></figure></li><li><p>配置完成后先在开发板ping虚拟机ip，如果能ping通基本上就没啥问题了，直接重启，或者执行boot命令即可</p></li></ol><!--PC版--><div id="SOHUCS" ></div><script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script><script type="text/javascript">window.changyan.api.config({appid: 'cywhVLBNm',conf: 'prod_449188a899f144a2be2e05b0a1b8f390'});</script>]]></content>
+    
+    
+    <categories>
+      
+      <category>Linux</category>
+      
+      <category>nxp</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>dsi introduction</title>
     <link href="/2022/12/06/dsi%20introduction/"/>
     <url>/2022/12/06/dsi%20introduction/</url>
