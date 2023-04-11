@@ -1,0 +1,817 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Hector">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="linux时钟子系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时钟子系统">
+<meta property="og:url" content="http://example.com/2023/04/09/%E6%97%B6%E9%92%9F%E5%AD%90%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="Hector&#39;s Blog Page">
+<meta property="og:description" content="linux时钟子系统">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/clk_imgs/ccf.jpg">
+<meta property="og:image" content="http://example.com/images/clk_imgs/relation.jpg">
+<meta property="article:published_time" content="2023-04-09T06:53:31.000Z">
+<meta property="article:modified_time" content="2023-04-11T07:57:57.043Z">
+<meta property="article:author" content="Hector">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/clk_imgs/ccf.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>时钟子系统 - Hector&#39;s Blog Page</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Hector</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">时钟子系统</span>
+          
+        </div>
+
+      </br>
+      </br>
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-04-09 14:53" pubdate>
+          2023年4月9日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          57 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div> 
+</div>
+
+
+
+</div>
+
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">时钟子系统</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <div align = "center">
+
+<h3 id="linux时钟子系统"><a href="#linux时钟子系统" class="headerlink" title="linux时钟子系统"></a>linux时钟子系统</h3></div>
+
+<h4 id="框架结构"><a href="#框架结构" class="headerlink" title="框架结构"></a>框架结构</h4><ul>
+<li>内核使用CCF(common clock framework)对时钟进行管理，linux时钟子系统框架结构如下图所示：<br> <img src="/../images/clk_imgs/ccf.jpg" srcset="/img/loading.gif" lazyload alt="pic"><ul>
+<li>右侧为时钟的提供者clock provider，比如各种有&#x2F;无源晶振</li>
+<li>中间为CCF，将时钟与对应的设备匹配</li>
+<li>左侧为时钟的使用者clock consumer，即各个设备</li>
+</ul>
+</li>
+</ul>
+<h4 id="clock-consumer"><a href="#clock-consumer" class="headerlink" title="clock consumer"></a>clock consumer</h4><ul>
+<li>clock子系统向clock comsumer提供一套通用API用于访问底层时钟，从而屏蔽底层硬件的差异，在进行设备驱动的编写时可以使用以下API函数对设备所需的时钟进行操作。 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_get</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *id)</span>;<br><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">devm_clk_get</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *id)</span>;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">clk_prepare</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;       <span class="hljs-comment">//启动clock前的准备工作，可能会睡眠</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">clk_unprepare</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;    <span class="hljs-comment">//停止clock之后的善后工作，可能会睡眠</span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">clk_enable</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;    <span class="hljs-comment">//启动clock，不会睡眠</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">clk_disable</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;  <span class="hljs-comment">//停止clock，不会睡眠</span><br><br><span class="hljs-comment">/*clock的频率获取和设置*/</span><br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-title function_">clk_get_rate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;<br><span class="hljs-type">long</span> <span class="hljs-title function_">clk_round_rate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate)</span>;<br><span class="hljs-type">int</span> <span class="hljs-title function_">clk_set_rate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate)</span>;<br><br><span class="hljs-comment">/*获取或者设置clock的parent*/</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">clk_set_parent</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk, <span class="hljs-keyword">struct</span> clk *parent)</span>;<br><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_get_parent</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">clk_prepare_enable</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;    <span class="hljs-comment">//将preparea和enable组合起来</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">clk_disable_unprepare</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk *clk)</span>;<span class="hljs-comment">//将unprepare和disable组合起来</span><br></code></pre></td></tr></table></figure></li>
+<li>需要注意的是，在进行设备驱动编写时，如果需要对时钟进行操作，必须先使用<code>clk_get</code>或者<code>devm_clk_get</code>函数获取对应的时钟，会返回一个<code>struct clk *</code>结构体，即为一个clk对象，在使用其他API时均通过传入此clk对象对具体的clk进行操作。</li>
+</ul>
+<h4 id="CCF-common-clock-framework"><a href="#CCF-common-clock-framework" class="headerlink" title="CCF(common clock framework)"></a>CCF(common clock framework)</h4><ul>
+<li>CCF是linux时钟子系统的核心，将其抽象为一个<code>struct clk_core</code>，每一个注册的时钟设备都对应一个<code>clk_core</code>。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_core</span> &#123;</span><br><span class="hljs-type">const</span> <span class="hljs-type">char</span>		*name;<br><span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_ops</span>	*<span class="hljs-title">ops</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_hw</span>		*<span class="hljs-title">hw</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">module</span>		*<span class="hljs-title">owner</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span>		*<span class="hljs-title">dev</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span>	*<span class="hljs-title">of_node</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_core</span>		*<span class="hljs-title">parent</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_parent_map</span>	*<span class="hljs-title">parents</span>;</span><br>u8			num_parents;<br>u8			new_parent_index;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		rate;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		req_rate;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		new_rate;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_core</span>		*<span class="hljs-title">new_parent</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_core</span>		*<span class="hljs-title">new_child</span>;</span><br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		flags;<br><span class="hljs-type">bool</span>			orphan;<br><span class="hljs-type">bool</span>			rpm_enabled;<br><span class="hljs-type">bool</span>			need_sync;<br><span class="hljs-type">bool</span>			boot_enabled;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		enable_count;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		prepare_count;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		protect_count;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		min_rate;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		max_rate;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		accuracy;<br><span class="hljs-type">int</span>			phase;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_duty</span>		<span class="hljs-title">duty</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hlist_head</span>	<span class="hljs-title">children</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hlist_node</span>	<span class="hljs-title">child_node</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hlist_head</span>	<span class="hljs-title">clks</span>;</span><br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		notifier_count;<br> <span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_DEBUG_FS</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dentry</span>		*<span class="hljs-title">dentry</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hlist_node</span>	<span class="hljs-title">debug_node</span>;</span><br> <span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">kref</span>		<span class="hljs-title">ref</span>;</span><br> &#125;;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="clock-provider"><a href="#clock-provider" class="headerlink" title="clock provider"></a>clock provider</h4><ul>
+<li>时钟子系统将所有的clock_provider分为6类<ul>
+<li>fixed_clk：固定频率时钟</li>
+<li>fixed_factor_clk：固定分频系数时钟</li>
+<li>devider：分频器</li>
+<li>gate：门，控制时钟使能&#x2F;失能</li>
+<li>mux：多路选择器，用于选择时钟源</li>
+<li>composite：从多个时钟中选一个父时钟，并对其进行分频</li>
+</ul>
+</li>
+</ul>
+<h5 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h5><ul>
+<li><p>将所有的clock_provider中共有的硬件特性抽象出来，使用<code>struct clk_hw</code>描述一个具体的硬件时钟</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_hw</span> &#123;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_core</span> *<span class="hljs-title">core</span>;</span>  <span class="hljs-comment">//和clk_hw互相包含 point back</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk</span> *<span class="hljs-title">clk</span>;</span>  <span class="hljs-comment">//指向consummer中的clk实例，用于 call clk API </span><br><span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_init_data</span> *<span class="hljs-title">init</span>;</span> <span class="hljs-comment">//contains the init data shared with the common clock framework</span><br> &#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><p><code>struct clk_init_data</code>描述时钟的初始化数据</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_init_data</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>		*name;<br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_ops</span>	*<span class="hljs-title">ops</span>;</span>  <span class="hljs-comment">//操作函数集合 consummer调用的API函数实际上就是此函数集的抽象</span><br>    <span class="hljs-comment">/* Only one of the following three should be assigned */</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>		* <span class="hljs-type">const</span> *parent_names;<br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_parent_data</span>	*<span class="hljs-title">parent_data</span>;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_hw</span>		**<span class="hljs-title">parent_hws</span>;</span><br>    u8			num_parents;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>		flags;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>struct clk_ops</code>时钟操作函数集合，定义在<code>kernel/include/linux/clk-provider.h</code>中<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">clk_ops</span> &#123;</span><br>    <span class="hljs-type">int</span>		(*prepare)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*unprepare)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*is_prepared)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*unprepare_unused)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*enable)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*disable)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*is_enabled)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*disable_unused)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*save_context)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*restore_context)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">unsigned</span> <span class="hljs-title function_">long</span>	<span class="hljs-params">(*recalc_rate)</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> parent_rate)</span>;<br>    <span class="hljs-type">long</span>	(*round_rate)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> *parent_rate);<br>    <span class="hljs-type">int</span>		(*determine_rate)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-keyword">struct</span> clk_rate_request *req);<br>    <span class="hljs-type">int</span>		(*set_parent)(<span class="hljs-keyword">struct</span> clk_hw *hw, u8 index);<br>    u8		(*get_parent)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*set_rate)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> parent_rate);<br>    <span class="hljs-type">int</span>		(*set_rate_and_parent)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate,<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> parent_rate, u8 index);<br>    <span class="hljs-type">unsigned</span> <span class="hljs-title function_">long</span>	<span class="hljs-params">(*recalc_accuracy)</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> parent_accuracy)</span>;<br>    <span class="hljs-type">int</span>		(*get_phase)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">int</span>		(*set_phase)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">int</span> degrees);<br>    <span class="hljs-type">int</span>		(*get_duty_cycle)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-keyword">struct</span> clk_duty *duty);<br>    <span class="hljs-type">int</span>		(*set_duty_cycle)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-keyword">struct</span> clk_duty *duty);<br>    <span class="hljs-type">int</span>		(*init)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*<span class="hljs-built_in">terminate</span>)(<span class="hljs-keyword">struct</span> clk_hw *hw);<br>    <span class="hljs-type">void</span>	(*debug_init)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-keyword">struct</span> dentry *dentry);<br>    <span class="hljs-type">int</span>		(*pre_rate_change)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> new_rate);<br>    <span class="hljs-type">int</span>		(*post_rate_change)(<span class="hljs-keyword">struct</span> clk_hw *hw, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> old_rate,<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> rate);<br>&#125;;<br></code></pre></td></tr></table></figure></li>
+<li>常用的函数，需要在clock驱动中实现</li>
+</ul>
+<div align="center">
+
+<table>
+<thead>
+<tr>
+<th align="center">function</th>
+<th align="center">description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">recalc_rate</td>
+<td align="center">通过查询硬件，重新计算此时钟的速率。可选，但建议——如果未设置此操作，则时钟速率初始化为0</td>
+</tr>
+<tr>
+<td align="center">round_rate</td>
+<td align="center">给定目标速率作为输入，返回时钟实际支持的最接近速率</td>
+</tr>
+<tr>
+<td align="center">set_rate</td>
+<td align="center">更改此时钟的速率,请求的速率由第二个参数指定，该参数通常应该是调用.round_rate返回;第三个参数给出了父速率，这对大多数.set_rate实现有帮助;成功返回0，否则返回-EERROR</td>
+</tr>
+<tr>
+<td align="center">enable</td>
+<td align="center">…</td>
+</tr>
+<tr>
+<td align="center">disable</td>
+<td align="center">…</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>各个数据结构之间的关系如下图所示：</p>
+<p>  <img src="/../images/clk_imgs/relation.jpg" srcset="/img/loading.gif" lazyload alt="relationship"></p>
+</li>
+</ul>
+<h4 id="注册方式"><a href="#注册方式" class="headerlink" title="注册方式"></a>注册方式</h4><ul>
+<li>fixed rate clock<ul>
+<li>这一类clock具有固定的频率，不能开关、不能调整频率、不能选择parent，是最简单的一类clock。可以直接通过 DTS 配置的方式支持。也可以通过接口，可以直接注册 fixed rate clock，如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">CLK_OF_DECLARE(fixed_clk, <span class="hljs-string">&quot;fixed-clock&quot;</span>, of_fixed_clk_setup);<br><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_fixed_rate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> *parent_name, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, </span><br><span class="hljs-params">          <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> fixed_rate)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>gate clock<ul>
+<li>这类clock只能选择开关，通过提供<code>.enable</code>和<code>.disable</code>回调函数实现，可通过下面接口进行注册：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_gate</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name,</span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> *parent_name, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, </span><br><span class="hljs-params">          <span class="hljs-type">void</span> __iomem *reg, u8 bit_idx, u8 clk_gate_flags, </span><br><span class="hljs-params">          <span class="hljs-type">spinlock_t</span> *lock)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>divider clock<ul>
+<li>这类clock可以设置分频值，因此会提供<code>.recal_rate</code>、<code>.set_rate</code>、<code>.round_date</code>，可通过下面两个接口注册<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_divider</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> *parent_name, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, </span><br><span class="hljs-params">          <span class="hljs-type">void</span> __iomem *reg, u8 shift, u8 width, u8 clk_divider_flags, </span><br><span class="hljs-params">          <span class="hljs-type">spinlock_t</span> *lock)</span>;<br><br><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_divider_table</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> *parent_name, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, <span class="hljs-type">void</span> __iomem *reg, </span><br><span class="hljs-params">          u8 shift, u8 width, u8 clk_divider_flags, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> clk_div_table *table, <span class="hljs-type">spinlock_t</span> *lock)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>mux clock<ul>
+<li>这类clock可以设置多个parent，实现<code>.get_parent</code>、<code>.set_parent</code>、<code>.recal_rate</code>回调函数，可通过下面两个接口注册：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_mux</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name,</span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> **parent_names, u8 num_parents, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, </span><br><span class="hljs-params">          <span class="hljs-type">void</span> __iomem *reg, u8 shift, u8 width, u8 clk_mux_flags, </span><br><span class="hljs-params">          <span class="hljs-type">spinlock_t</span> *lock)</span>;<br>              <br><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_mux_table</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> **parent_names, u8 num_parents, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags,</span><br><span class="hljs-params">          <span class="hljs-type">void</span> __iomem *reg, u8 shift, u32 mask, u8 clk_mux_flags, </span><br><span class="hljs-params">          u32 *table, <span class="hljs-type">spinlock_t</span> *lock)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>fixed factor clock<ul>
+<li>这一类clock具有固定的factor（即multiplier和divider），clock的频率是由parent clock的频率，乘以mul，除以div，多用于一些具有固定分频系数的clock。由于parent clock的频率可以改变，因而fix factor clock也可该改变频率，因此也会提供<code>.recalc_rate</code>、<code>.set_rate</code>、<code>.round_rate</code>等回调。可通过下面接口注册：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_fixed_factor</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, </span><br><span class="hljs-params">          <span class="hljs-type">const</span> <span class="hljs-type">char</span> *parent_name, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags, </span><br><span class="hljs-params">          <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> mult, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> div)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>composite clock<ul>
+<li>其余各类clock的组合<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">struct</span> clk *<span class="hljs-title function_">clk_register_composite</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *name,</span><br><span class="hljs-params">              <span class="hljs-type">const</span> <span class="hljs-type">char</span> **parent_names, <span class="hljs-type">int</span> num_parents,</span><br><span class="hljs-params">              <span class="hljs-keyword">struct</span> clk_hw *mux_hw, <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> clk_ops *mux_ops,</span><br><span class="hljs-params">              <span class="hljs-keyword">struct</span> clk_hw *rate_hw, <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> clk_ops *rate_ops,</span><br><span class="hljs-params">              <span class="hljs-keyword">struct</span> clk_hw *gate_hw, <span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> clk_ops *gate_ops,</span><br><span class="hljs-params">              <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags)</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<!--PC版-->
+<div id="SOHUCS" ></div>
+<script charset="utf-8" type="text/javascript" src="https://cy-cdn.kuaizhan.com/upload/changyan.js" ></script>
+<script type="text/javascript">
+window.changyan.api.config({
+appid: 'cywhVLBNm',
+conf: 'prod_449188a899f144a2be2e05b0a1b8f390'
+});
+</script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux/Drivers/" class="category-chain-item">Drivers</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>时钟子系统</div>
+      <div>http://example.com/2023/04/09/时钟子系统/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Hector</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年4月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/12/26/imx6ull%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/" title="imx6ull和虚拟机网络配置说明">
+                        <span class="hidden-mobile">imx6ull和虚拟机网络配置说明</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://example.com/2023/04/09/%E6%97%B6%E9%92%9F%E5%AD%90%E7%B3%BB%E7%BB%9F/';
+          this.page.identifier = '/2023/04/09/%E6%97%B6%E9%92%9F%E5%AD%90%E7%B3%BB%E7%BB%9F/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       Hector > 保持好奇-保持热爱 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
