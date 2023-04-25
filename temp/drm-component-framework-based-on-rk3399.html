@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Hector">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="drm component framework based on rk3399参考链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;shikivs&#x2F;article&#x2F;details&#x2F;103591971   1 component 框架简析 drm 使用component框架加载各个组件，component 框架中的设备包含两种类型—master device和component device，后">
+<meta property="og:type" content="website">
+<meta property="og:title" content="drm component framework based on rk3399">
+<meta property="og:url" content="http://example.com/temp/drm-component-framework-based-on-rk3399.html">
+<meta property="og:site_name" content="Hector&#39;s Blog Page">
+<meta property="og:description" content="drm component framework based on rk3399参考链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;shikivs&#x2F;article&#x2F;details&#x2F;103591971   1 component 框架简析 drm 使用component框架加载各个组件，component 框架中的设备包含两种类型—master device和component device，后">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-14T01:13:44.000Z">
+<meta property="article:modified_time" content="2023-04-14T08:57:57.489Z">
+<meta property="article:author" content="Hector">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>drm component framework based on rk3399 - Hector&#39;s Blog Page</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Hector</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">drm component framework based on rk3399</span>
+          
+        </div>
+
+      </br>
+      </br>
+        
+      </div>
+
+      
+    </div>
+  </div> 
+</div>
+
+
+
+</div>
+
+
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-x-md">
+        <div id="board"
+          >
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+<article class="page-content">
+  <div align="center">
+
+<h1 id="drm-component-framework-based-on-rk3399"><a href="#drm-component-framework-based-on-rk3399" class="headerlink" title="drm component framework based on rk3399"></a>drm component framework based on rk3399</h1><p><em>参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/shikivs/article/details/103591971">https://blog.csdn.net/shikivs/article/details/103591971</a></em></p>
+</div>
+
+<h2 id="1-component-框架简析"><a href="#1-component-框架简析" class="headerlink" title="1 component 框架简析"></a>1 component 框架简析</h2><blockquote>
+<p>drm 使用component框架加载各个组件，component 框架中的设备包含两种类型—<strong>master device</strong>和<strong>component device</strong>，后者由前者管理，当所有的component device按照顺序初始化完成之后，master device才能进行最终的初始化。</p>
+</blockquote>
+<blockquote>
+<p><strong>master device</strong>在设备树中往往体现为一个子系统节点，比如<code>XXX_subsystem</code>，此节点下包含<code>ports</code>属性，<code>ports</code>属性中包含与master device关联的component device，以rk3399 的display_subsystem为例：</p>
+</blockquote>
+<ul>
+<li><p>master device在设备树中的节点为：</p>
+<figure class="highlight dst"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs dst"><span class="language-xml"> 	display_subsystem: display-subsystem </span><span class="hljs-template-variable">&#123;</span><br><span class="hljs-template-variable">	u-boot,dm-pre-reloc;</span><br><span class="hljs-template-variable">	compatible = &quot;rockchip,display-subsystem&quot;;</span><br><span class="hljs-template-variable">	ports = &lt;&amp;vopl_out&gt;, &lt;&amp;vopb_out&gt;;</span><br><span class="hljs-template-variable">	clocks = &lt;&amp;cru PLL_VPLL&gt;, &lt;&amp;cru PLL_CPLL&gt;;</span><br><span class="hljs-template-variable">	clock-names = &quot;hdmi-tmds-pll&quot;, &quot;<span class="hljs-keyword">default</span>-vop-pll&quot;;</span><br><span class="hljs-template-variable">	devfreq = &lt;&amp;dmc&gt;;</span><br><span class="hljs-template-variable">	status = &quot;okay&quot;;</span><br><span class="hljs-template-variable">&#125;</span><span class="language-xml">;</span><br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>上述节点的ports 属性对应另外两个设备节点，分别为<strong>vopl_out</strong>和<strong>vopb_out</strong>，vopl和vopb是rk平台中的两个vop(video out processor)，前者最高支持2K输出(lite)，后者最高支持4K输出(big)。</p>
+</blockquote>
+</li>
+<li><p>component device在设备树中的节点为（以vopl为例）：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-symbol"> vopl:</span> <span class="hljs-title class_">vop@ff8f0000</span> <span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">compatible</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;rockchip,rk3399-vop-lit&quot;</span><span class="hljs-punctuation">;</span><br><br>       ...省略无关代码<br><span class="hljs-symbol"></span><br><span class="hljs-symbol">	vopl_out:</span> <span class="hljs-title class_">port</span> <span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-meta">#address-cells = &lt;1&gt;;</span><br>		<span class="hljs-meta">#size-cells = &lt;0&gt;;</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">		vopl_out_dsi:</span> <span class="hljs-title class_">endpoint@0</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">0</span>&gt;</span><span class="hljs-punctuation">;</span><br>			<span class="hljs-attr">remote-endpoint</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;dsi_in_vopl</span>&gt;</span><span class="hljs-punctuation">;</span><br>		<span class="hljs-punctuation">&#125;;</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">		vopl_out_edp:</span> <span class="hljs-title class_">endpoint@1</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">1</span>&gt;</span><span class="hljs-punctuation">;</span><br>			<span class="hljs-attr">remote-endpoint</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;edp_in_vopl</span>&gt;</span><span class="hljs-punctuation">;</span><br>		<span class="hljs-punctuation">&#125;;</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">		vopl_out_hdmi:</span> <span class="hljs-title class_">endpoint@2</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">2</span>&gt;</span><span class="hljs-punctuation">;</span><br>			<span class="hljs-attr">remote-endpoint</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;hdmi_in_vopl</span>&gt;</span><span class="hljs-punctuation">;</span><br>		<span class="hljs-punctuation">&#125;;</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">		vopl_out_dp:</span> <span class="hljs-title class_">endpoint@3</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">3</span>&gt;</span><span class="hljs-punctuation">;</span><br>			<span class="hljs-attr">remote-endpoint</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;dp_in_vopl</span>&gt;</span><span class="hljs-punctuation">;</span><br>		<span class="hljs-punctuation">&#125;;</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">		vopl_out_dsi1:</span> <span class="hljs-title class_">endpoint@4</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">4</span>&gt;</span><span class="hljs-punctuation">;</span><br>			<span class="hljs-attr">remote-endpoint</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-variable">&amp;dsi1_in_vopl</span>&gt;</span><span class="hljs-punctuation">;</span><br>		<span class="hljs-punctuation">&#125;;</span><br>	<span class="hljs-punctuation">&#125;;</span><br><span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>在drm框架中，将vopl_out抽象为<strong>crtc</strong>设备，其子节点中包含许多<strong>remote</strong>节点,包括dsi、hdmi、edp等，这些设备在drm框架中被抽象为<strong>encoder</strong>设备，vopl通过这些remote节点与它们进行关联。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="2-master-device驱动代码解析"><a href="#2-master-device驱动代码解析" class="headerlink" title="2 master device驱动代码解析"></a>2 master device驱动代码解析</h2><blockquote>
+<p>master device驱动源码文件路径为<code>drivers/gpu/drm/rockchip/rockchip_drm_drv.c</code></p>
+</blockquote>
+<h3 id="2-1-驱动流程"><a href="#2-1-驱动流程" class="headerlink" title="2.1 驱动流程"></a>2.1 驱动流程</h3><ul>
+<li>驱动流程在<code>rockchip_drm_platform_probe(struct platform_device *pdv)</code>中展开</li>
+<li>核心数据结构为<code>struct component_match *match;</code>,其实质是一个数组指针</li>
+</ul>
+<ol>
+<li><p>获取master节点下的ports属性(即<code>vopl_out</code>和<code>vopb_out</code>节点)，然后获取这两个节点的父节点<code>vopb</code>和<code>vopl</code>节点，即为<mark>DRM框架中的CRTC设备</mark></p>
+ <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span>; ; i++)<br>&#123;<br>    ...<br>    port = of_parse_phandle(np, <span class="hljs-string">&quot;ports&quot;</span>, i); <span class="hljs-comment">//获取ports 即vopb_out和vopl_out</span><br>    ...<br>    component_match_add(dev, &amp;match, compare_of, port-&gt;parent);   <span class="hljs-comment">//componnent_add vopb和vopl 详解见2.3(1)</span><br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>对于上面每一个有效的crtc设备，根据其设备节点中的<strong>endpoint</strong>节点，获取<mark>encoder</mark>设备</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span>; ; i++)<br>&#123;<br>    ...<br>    port = of_parse_phandle(np, <span class="hljs-string">&quot;ports&quot;</span>, i);  <span class="hljs-comment">//获取ports 即vopb_out和vopl_out </span><br>    rockchip_add_endpoints(dev, &amp;match, port); <span class="hljs-comment">//添加ports中的endpoint节点中的encoder设备 即dsi_in_vopb等节点 详解见2.3(3)</span><br>    ...<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>添加背光节点-<strong>backlight component</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">port = of_parse_phandle(np, <span class="hljs-string">&quot;backlight&quot;</span>, <span class="hljs-number">0</span>);<br>component_match_add(dev, &amp;match, compare_of, port);<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>实际上rk的dispaly_subsystem中并未定义backlight节点，但此段代码也未作错误退出处理</p>
+</blockquote>
+</li>
+<li><p>match配置完成之后，注册一个<mark>带match的master device</mark></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">return</span> component_master_add_with_match(dev, &amp;rockchip_drm_ops, match); <span class="hljs-comment">//详解见2.3(4)</span><br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>@dev:    matser 设备<br> @rockchip_drm_ops:   master device的回调函数，主要为add_components、bind和unbind函数，当master下所有的component device初始化完成后，master device调用bind函数完成自身的初始化。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="2-2-数据结构"><a href="#2-2-数据结构" class="headerlink" title="2.2 数据结构"></a>2.2 数据结构</h3><h4 id="1-struct-component-match"><a href="#1-struct-component-match" class="headerlink" title="(1) struct component_match"></a>(1) struct component_match</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component_match</span> &#123;</span><br>	<span class="hljs-type">size_t</span> alloc;<br>	<span class="hljs-type">size_t</span> num;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>		<span class="hljs-type">void</span> *data;<br>		<span class="hljs-type">int</span> (*fn)(<span class="hljs-keyword">struct</span> device *, <span class="hljs-type">void</span> *);  <span class="hljs-comment">//匹配函数</span><br>	&#125; compare[<span class="hljs-number">0</span>];<br>&#125;;<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>alloc</strong>和<strong>num</strong>用于内存的分配和管理<br><strong>compare</strong>用于master与component的匹配，使用一个零长数组进行定义，可动态分配数组内存。</p>
+</blockquote>
+<h4 id="2-struct-master"><a href="#2-struct-master" class="headerlink" title="(2) struct master"></a>(2) struct master</h4><blockquote>
+<p>component framwork中使用一个master_list来维护所有的master _device,在注册master设备时，将master device注册至此链表中</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">master</span> &#123;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">node</span>;</span>    <span class="hljs-comment">//master device所属的链表</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">components</span>;</span>  <span class="hljs-comment">//master device使用一个component_list用于维护下属的component device</span><br>	<span class="hljs-type">bool</span> bound;  <span class="hljs-comment">//master状态 0-未绑定 1-已绑定</span><br><br>	<span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component_master_ops</span> *<span class="hljs-title">ops</span>;</span> <span class="hljs-comment">//master 的call back func</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> *<span class="hljs-title">dev</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component_match</span> *<span class="hljs-title">match</span>;</span>  <span class="hljs-comment">//注册时传入的match</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<h4 id="3-struct-component-master-ops-rockchip-drm-ops"><a href="#3-struct-component-master-ops-rockchip-drm-ops" class="headerlink" title="(3) struct component_master_ops rockchip_drm_ops"></a>(3) struct component_master_ops rockchip_drm_ops</h4><blockquote>
+<p>master 的回调函数 由于rk注册带match的master device，因此未实现add_components函数</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component_master_ops</span> <span class="hljs-title">rockchip_drm_ops</span> =</span> &#123;<br>	.bind = rockchip_drm_bind,   <span class="hljs-comment">//关联2.3(6)</span><br>	.unbind = rockchip_drm_unbind,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-3-核心函数"><a href="#2-3-核心函数" class="headerlink" title="2.3 核心函数"></a>2.3 核心函数</h3><h4 id="1-component-match-add"><a href="#1-component-match-add" class="headerlink" title="(1) component_match_add"></a>(1) component_match_add</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">component_match_add</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-keyword">struct</span> component_match **matchptr,</span><br><span class="hljs-params">	            <span class="hljs-type">int</span> (*compare)(<span class="hljs-keyword">struct</span> device *, <span class="hljs-type">void</span> *), <span class="hljs-type">void</span> *compare_data)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component_match</span> *<span class="hljs-title">match</span> =</span> *matchptr;<br>	...<br>	<span class="hljs-keyword">if</span> (!match || match-&gt;num == match-&gt;alloc) &#123;       <span class="hljs-comment">//添加component后重新为match分配内存</span><br>		<span class="hljs-type">size_t</span> new_size = match ? match-&gt;alloc + <span class="hljs-number">16</span> : <span class="hljs-number">15</span>;<br>		match = component_match_realloc(dev, match, new_size);<br>		*matchptr = match;<br>		<span class="hljs-keyword">if</span> (IS_ERR(match))<br>			<span class="hljs-keyword">return</span>;<br>	&#125;<br><br>	match-&gt;compare[match-&gt;num].fn = compare;  <span class="hljs-comment">//自定义匹配函数 用于master与component的匹配</span><br>	match-&gt;compare[match-&gt;num].data = compare_data;  <span class="hljs-comment">//传入的数据 用于master与component的匹配，一般直接将component节点``struct device_node``传入</span><br>	match-&gt;num++;  <span class="hljs-comment">//更新match num</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-compare-of"><a href="#2-compare-of" class="headerlink" title="(2) compare_of"></a>(2) compare_of</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">compare_of</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev, <span class="hljs-type">void</span> *data)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span> *<span class="hljs-title">np</span> =</span> data;<br>	<span class="hljs-keyword">return</span> dev-&gt;of_node == np;<br>&#125;<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>自定义的匹配函数，在调用<code>component_match_add</code>时传入，作为match中compare的fn成员，要求设备节点与match中的compare[n]-&gt;data相同。</p>
+</blockquote>
+<h4 id="3-rockchip-add-endpoints"><a href="#3-rockchip-add-endpoints" class="headerlink" title="(3) rockchip_add_endpoints"></a>(3) rockchip_add_endpoints</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">rockchip_add_endpoints</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev,</span><br><span class="hljs-params">				   <span class="hljs-keyword">struct</span> component_match **match,</span><br><span class="hljs-params">				   <span class="hljs-keyword">struct</span> device_node *port)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_node</span> *<span class="hljs-title">ep</span>, *<span class="hljs-title">remote</span>;</span><br><br>	for_each_available_child_of_node(port, ep) &#123;       <span class="hljs-comment">//遍历vopb/vopl的子节点 即一众endpoint节点</span><br>		remote = of_graph_get_remote_port_parent(ep);  <span class="hljs-comment">//获取remote节点</span><br>		...<br>		component_match_add(dev, match, compare_of, remote);  <span class="hljs-comment">//componnent_add dsi_in_vopb</span><br>		of_node_put(remote);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="4-component-master-add-with-match"><a href="#4-component-master-add-with-match" class="headerlink" title="(4) component_master_add_with_match"></a>(4) component_master_add_with_match</h4><blockquote>
+<p>此函数的主要作用是将master device注册至component 框架中</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">component_master_add_with_match</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *dev,</span><br><span class="hljs-params">	<span class="hljs-type">const</span> <span class="hljs-keyword">struct</span> component_master_ops *ops,</span><br><span class="hljs-params">	<span class="hljs-keyword">struct</span> component_match *match)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">master</span> *<span class="hljs-title">master</span>;</span><br>	<span class="hljs-type">int</span> ret;<br>	...<br>	<span class="hljs-keyword">if</span> (match) &#123;<br>		match = component_match_realloc(dev, match, match-&gt;num);   <span class="hljs-comment">//根据match中compare的真实数量重新为其分配空间 </span><br>		<span class="hljs-keyword">if</span> (IS_ERR(match))<br>			<span class="hljs-keyword">return</span> PTR_ERR(match);<br>	&#125;<br>	...<br>	master-&gt;dev = dev;<br>	master-&gt;ops = ops;        <span class="hljs-comment">//回调函数</span><br>	master-&gt;match = match;<br>	INIT_LIST_HEAD(&amp;master-&gt;components);  <span class="hljs-comment">//初始化master中的component链表</span><br>    ...<br>	list_add(&amp;master-&gt;node, &amp;masters);  <span class="hljs-comment">//将master添加至component 框架中的master链表中</span><br>	ret = try_to_bring_up_master(master, <span class="hljs-literal">NULL</span>);  <span class="hljs-comment">//尝试初始化master device 详解见2.3(5)</span><br>    ...<br>	<span class="hljs-keyword">return</span> ret &lt; <span class="hljs-number">0</span> ? ret : <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="5-try-to-bring-up-master"><a href="#5-try-to-bring-up-master" class="headerlink" title="(5) try_to_bring_up_master"></a>(5) try_to_bring_up_master</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">try_to_bring_up_master</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> master *master,</span><br><span class="hljs-params">	<span class="hljs-keyword">struct</span> component *component)</span><br>&#123;<br>	<span class="hljs-type">int</span> ret;<br><br>	<span class="hljs-keyword">if</span> (master-&gt;bound)  <span class="hljs-comment">//判断master状态 </span><br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">/******</span><br><span class="hljs-comment">    find_components函数 主要完成master与component之间的匹配 提供两种匹配方式：</span><br><span class="hljs-comment">    1.如果master中的match为空，则调用master的回调函数：add_components来匹配component设备，</span><br><span class="hljs-comment">    但是rk在一开始就对match进行了初始化，而且它直接没有实现add_components的回调。</span><br><span class="hljs-comment">    使用此种匹配方式时在2.1节第4步时可选择注册不带match的master_device，使用component_master_add函数</span><br><span class="hljs-comment">    2.第二种是利用match来进行匹配，也是rk使用的匹配方法。</span><br><span class="hljs-comment">    -| component_master_add_child(master,match-&gt;compare[i].fn,match-&gt;compare[i].data)</span><br><span class="hljs-comment">    ---| list_for_each_entry(c, &amp;component_list, node) //遍历component框架中的component_list，</span><br><span class="hljs-comment">            使用compare函数进行匹配，如果匹配成功，则将此component和master进行attach</span><br><span class="hljs-comment">    -------| component_attach_master(master, c); //将component存入master维护的components列表</span><br><span class="hljs-comment">    ******/</span><br>	<span class="hljs-keyword">if</span> (find_components(master)) &#123;<br>		<span class="hljs-comment">/* Failed to find all components */</span><br>		ret = <span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">goto</span> out;<br>	&#125;<br>    ...<br>	<span class="hljs-keyword">if</span> (!devres_open_group(master-&gt;dev, <span class="hljs-literal">NULL</span>, GFP_KERNEL)) &#123;<br>		ret = -ENOMEM;<br>		<span class="hljs-keyword">goto</span> out;<br>	&#125;<br>	ret = master-&gt;ops-&gt;bind(master-&gt;dev);  <span class="hljs-comment">//找到所有的components后 完成master的初始化，回调master-&gt;bind函数  详解见2.3(6)</span><br>	<span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>		devres_release_group(master-&gt;dev, <span class="hljs-literal">NULL</span>);<br>		dev_info(master-&gt;dev, <span class="hljs-string">&quot;master bind failed: %d\n&quot;</span>, ret);<br>		<span class="hljs-keyword">goto</span> out;<br>	&#125;<br><br>	master-&gt;bound = <span class="hljs-literal">true</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br><br>out:<br>	master_remove_components(master);<br>	<span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-DRM-device-初始化"><a href="#3-DRM-device-初始化" class="headerlink" title="3 DRM device 初始化"></a>3 DRM device 初始化</h2><blockquote>
+<p>在master设备调用.bind函数时，将会完成drm的初始化</p>
+</blockquote>
+<h3 id="3-1-初始化流程"><a href="#3-1-初始化流程" class="headerlink" title="3.1 初始化流程"></a>3.1 初始化流程</h3><blockquote>
+<p>drm围绕着3个核心数据结构展开</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">drm_dev</span>;</span>     <span class="hljs-comment">//关联3.2(1)</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_driver</span> <span class="hljs-title">rockchip_drm_driver</span>;</span>  <span class="hljs-comment">//关联3.2(2)</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_drm_private</span> *<span class="hljs-title">private</span>;</span>   <span class="hljs-comment">//关联3.2(3)</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li><p>实例化一个drm_device</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">   <span class="hljs-comment">/*实例化一个drm_device*/</span><br>drm_dev = drm_dev_alloc(&amp;rockchip_drm_driver, dev);  <span class="hljs-comment">//关联2.2(4)</span><br>ret = drm_dev_set_unique(drm_dev, <span class="hljs-string">&quot;%s&quot;</span>, dev_name(dev));<br>dev_set_drvdata(dev, drm_dev);  <span class="hljs-comment">//将drm_dev设为master-&gt;dev的私有数据</span><br></code></pre></td></tr></table></figure></li>
+<li><p>实例化一个private对象，并根据master设备树节点中的属性对其某些成员进行初始化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">private = devm_kzalloc(drm_dev-&gt;dev, <span class="hljs-keyword">sizeof</span>(*private), GFP_KERNEL);<br>drm_dev-&gt;dev_private = private;<br>private-&gt;dmc_support = <span class="hljs-literal">false</span>;<br>private-&gt;devfreq = devfreq_get_devfreq_by_phandle(dev, <span class="hljs-number">0</span>);<br>private-&gt;hdmi_pll.pll = devm_clk_get(dev, <span class="hljs-string">&quot;hdmi-tmds-pll&quot;</span>);<br>private-&gt;default_pll.pll = devm_clk_get(dev, <span class="hljs-string">&quot;default-vop-pll&quot;</span>);<br></code></pre></td></tr></table></figure></li>
+<li><p>drm初始化iommu</p>
+<blockquote>
+<p>-|  rockchip_drm_init_iommu(drm_dev);<br> —| private-&gt;domain &#x3D; iommu_domain_alloc(&amp;platform_bus_type);<br> —| drm_mm_init(&amp;private-&gt;mm, start, end - start + 1);<br> —| iommu_set_fault_handler(private-&gt;domain, rockchip_drm_fault_handler,<br>             drm_dev);</p>
+</blockquote>
+</li>
+<li><p>drm初始化modeconfig</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">drm_mode_config_init(drm_dev);  <span class="hljs-comment">//初始化drm_device的mode_config</span><br>rockchip_drm_mode_config_init(drm_dev);  <span class="hljs-comment">//modeconfig赋值 关联3.3(1)</span><br></code></pre></td></tr></table></figure></li>
+<li><p>创建peoperties，初始化private中的各个property</p>
+<blockquote>
+<p>-| rockchip_drm_create_properties(drm_dev)<br>  —| drm_property_create_xxx<br>  —| drm_mode_create_tv_properties(drm_dev, 0, NULL)</p>
+</blockquote>
+</li>
+<li><p>尝试绑定所有的components  -关联3.3(2)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">ret = component_bind_all(dev, drm_dev);<br></code></pre></td></tr></table></figure></li>
+<li><p>设置connector的property -关联3.3(3)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">rockchip_attach_connector_property(drm_dev);<br></code></pre></td></tr></table></figure></li>
+<li><p>初始化VBLANK</p>
+<blockquote>
+<p>Atomic 操作依赖 VSYNC 中断（即 VBLANK 事件），因此需要使用 hrtimer 来提供软件中断信号。在驱动初始化时调用 **drm_vblank_init()**，在 VSYNC 中断处理函数中调用 **drm_handle_vblank()**。<br>crtc 即为display pipeline，需初始化vblank使其支持num_crtc display_crtc</p>
+ <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">ret = drm_vblank_init(drm_dev, drm_dev-&gt;mode_config.num_crtc);<br></code></pre></td></tr></table></figure></blockquote>
+</li>
+<li><p>reset mode config</p>
+<blockquote>
+<p>调用各个component的reset回调函数</p>
+</blockquote>
+<blockquote>
+<p>-| drm_mode_config_reset(drm_dev);<br>   —|plane-&gt;funcs-&gt;reset(plane);<br>   —|crtc-&gt;funcs-&gt;reset(crtc);<br>   —|encoder-&gt;funcs-&gt;reset(encoder);<br>   —|connector-&gt;funcs-&gt;reset(connector);</p>
+</blockquote>
+</li>
+<li><p>初始化gem、fbdev和crtc</p>
+</li>
+<li><p>注册drm设备</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">ret = drm_dev_register(drm_dev, <span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="3-2-数据结构"><a href="#3-2-数据结构" class="headerlink" title="3.2 数据结构"></a>3.2 数据结构</h3><h4 id="1-struct-drm-device-drm-dev"><a href="#1-struct-drm-device-drm-dev" class="headerlink" title="(1) struct drm_device *drm_dev"></a>(1) struct drm_device *drm_dev</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> &#123;</span><br>    ...<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> *<span class="hljs-title">dev</span>;</span>		<span class="hljs-comment">/**&lt; Device structure of bus-device */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_driver</span> *<span class="hljs-title">driver</span>;</span>	<span class="hljs-comment">/**&lt; DRM driver managing the device */</span><br>	<span class="hljs-type">void</span> *dev_private;		<span class="hljs-comment">// DRM driver private data 3.2(2)将会成为此成员</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_minor</span> *<span class="hljs-title">control</span>;</span>		<span class="hljs-comment">/**&lt; Control node */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_minor</span> *<span class="hljs-title">primary</span>;</span>		<span class="hljs-comment">/**&lt; Primary node */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_minor</span> *<span class="hljs-title">render</span>;</span>		<span class="hljs-comment">/**&lt; Render node */</span><br>	<span class="hljs-type">char</span> *unique;				    <span class="hljs-comment">/**&lt; unique name of the device */</span><br>    ...<br>	<span class="hljs-type">bool</span> irq_enabled;               <span class="hljs-comment">//VBLANK irq support</span><br>	<span class="hljs-type">int</span> irq;<br>	<span class="hljs-type">bool</span> vblank_disable_allowed;<br>	<span class="hljs-type">bool</span> vblank_disable_immediate;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_vblank_crtc</span> *<span class="hljs-title">vblank</span>;</span><br>	u32 max_vblank_count;           <span class="hljs-comment">/**&lt; size of vblank counter register */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_sg_mem</span> *<span class="hljs-title">sg</span>;</span>	         <span class="hljs-comment">/**&lt; Scatter gather memory */</span><br>	<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> num_crtcs;                  <span class="hljs-comment">/**&lt; Number of CRTCs on this device */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mode_config</span> <span class="hljs-title">mode_config</span>;</span>	<span class="hljs-comment">/**&lt; Current mode config */</span><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h4 id="2-struct-drm-driver-rockchip-drm-driver"><a href="#2-struct-drm-driver-rockchip-drm-driver" class="headerlink" title="(2) struct drm_driver rockchip_drm_driver"></a>(2) struct drm_driver rockchip_drm_driver</h4><blockquote>
+<p>每个DRM驱动程序的核心层是一个struct drm_driver 结构。驱动程序通常静态地初始化一个drm_driver，然后将其传递给drm_dev_alloc()来分配一个设备实例。设备实例完全初始化之后，可以使用drm_dev_register()对其进行注册，而后可以从用户空间访问此drm设备。<br>struct drm_driver结构包含描述驱动程序及其支持特性的静态信息，以及一些需要实现的函数指针供将来调用。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_driver</span> <span class="hljs-title">rockchip_drm_driver</span> =</span> &#123;<br>	.driver_features	= DRIVER_MODESET | DRIVER_GEM |   <span class="hljs-comment">//driver 特性，表示其支持的操作</span><br>				    DRIVER_PRIME | DRIVER_ATOMIC |<br>				    DRIVER_RENDER,<br>	.preclose		= rockchip_drm_preclose,<br>	.lastclose		= rockchip_drm_lastclose,<br>	.get_vblank_counter	= drm_vblank_no_hw_counter,<br>	.open			= rockchip_drm_open,<br>	.postclose		= rockchip_drm_postclose,<br>	.enable_vblank		= rockchip_drm_crtc_enable_vblank,<br>	.disable_vblank		= rockchip_drm_crtc_disable_vblank,<br>	.gem_vm_ops		= &amp;rockchip_drm_vm_ops,<br>	.gem_free_object	= rockchip_gem_free_object,<br>	.dumb_create		= rockchip_gem_dumb_create,<br>	.dumb_map_offset	= rockchip_gem_dumb_map_offset,<br>	.dumb_destroy		= drm_gem_dumb_destroy,<br>	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd,<br>	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle,<br>	.gem_prime_import	= drm_gem_prime_import,<br>	.gem_prime_export	= drm_gem_prime_export,<br>	.gem_prime_get_sg_table	= rockchip_gem_prime_get_sg_table,<br>	.gem_prime_import_sg_table	= rockchip_gem_prime_import_sg_table,<br>	.gem_prime_vmap		= rockchip_gem_prime_vmap,<br>	.gem_prime_vunmap	= rockchip_gem_prime_vunmap,<br>	.gem_prime_mmap		= rockchip_gem_mmap_buf,<br>	.gem_prime_begin_cpu_access = rockchip_gem_prime_begin_cpu_access,<br>	.gem_prime_end_cpu_access = rockchip_gem_prime_end_cpu_access,<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_DEBUG_FS</span><br>	.debugfs_init		= rockchip_drm_debugfs_init,<br>	.debugfs_cleanup	= rockchip_drm_debugfs_cleanup,<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>	.ioctls			= rockchip_ioctls,<br>	.num_ioctls		= ARRAY_SIZE(rockchip_ioctls),<br>	.fops			= &amp;rockchip_drm_driver_fops,<br>	.name	= DRIVER_NAME,<br>	.desc	= DRIVER_DESC,<br>	.date	= DRIVER_DATE,<br>	.major	= DRIVER_MAJOR,<br>	.minor	= DRIVER_MINOR,<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h4 id="3-struct-rockchip-drm-private"><a href="#3-struct-rockchip-drm-private" class="headerlink" title="(3) struct rockchip_drm_private"></a>(3) struct rockchip_drm_private</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_drm_private</span> &#123;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_logo</span> *<span class="hljs-title">logo</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">logo_ymirror_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_mode_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_lut_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_stage_up_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_stage_down_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_global_dn_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">cabc_calc_pixel_num_property</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">eotf_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">color_space_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">global_alpha_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">blend_mode_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">alpha_scale_prop</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">pdaf_type</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">work_mode</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_property</span> *<span class="hljs-title">pdaf_data_type</span>;</span><br>	<span class="hljs-type">void</span> *backlight;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_fb_helper</span> *<span class="hljs-title">fbdev_helper</span>;</span>  <span class="hljs-comment">//fb helper</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_gem_object</span> *<span class="hljs-title">fbdev_bo</span>;</span>     <span class="hljs-comment">//gem ob</span><br>	<span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_crtc_funcs</span> *<span class="hljs-title">crtc_funcs</span>[<span class="hljs-title">ROCKCHIP_MAX_CRTC</span>];</span>  <span class="hljs-comment">//crtc funcs</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_atomic_state</span> *<span class="hljs-title">state</span>;</span>     <span class="hljs-comment">//atomic support</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_atomic_commit</span> *<span class="hljs-title">commit</span>;</span><br>	<span class="hljs-comment">/* protect async commit */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">work_struct</span> <span class="hljs-title">commit_work</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">iommu_domain</span> *<span class="hljs-title">domain</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mm</span> <span class="hljs-title">mm</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_dclk_pll</span> <span class="hljs-title">default_pll</span>;</span>  <span class="hljs-comment">//对应设备树中&quot;default-vop-pll&quot;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_dclk_pll</span> <span class="hljs-title">hdmi_pll</span>;</span>     <span class="hljs-comment">//对应设备树中&quot;hdmi-tmds-pll&quot;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">devfreq</span> *<span class="hljs-title">devfreq</span>;</span><br>	<span class="hljs-type">bool</span> dmc_support;<br>	...<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h4 id="3-struct-drm-mode-config-funcs-–关联3-2-4"><a href="#3-struct-drm-mode-config-funcs-–关联3-2-4" class="headerlink" title="(3) struct drm_mode_config_funcs  –关联3.2(4)"></a>(3) struct drm_mode_config_funcs  –关联3.2(4)</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mode_config_funcs</span> &#123;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_framebuffer</span> *(*<span class="hljs-title">fb_create</span>)(<span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">dev</span>,<span class="hljs-keyword">struct</span> <span class="hljs-title">drm_file</span> *<span class="hljs-title">file_priv</span>, </span><br><span class="hljs-class">    <span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mode_fb_cmd2</span> *<span class="hljs-title">mode_cmd</span>);</span>  <span class="hljs-comment">//创建一个新的framebuffer object</span><br>	<span class="hljs-type">void</span> (*output_poll_changed)(<span class="hljs-keyword">struct</span> drm_device *dev); <span class="hljs-comment">//function to handle output configuration changes</span><br>	<span class="hljs-type">int</span> (*<span class="hljs-type">atomic_check</span>)(<span class="hljs-keyword">struct</span> drm_device *dev, <span class="hljs-keyword">struct</span> drm_atomic_state *a); <span class="hljs-comment">//检查是否支持atomic</span><br>	<span class="hljs-type">int</span> (*<span class="hljs-type">atomic_commit</span>)(<span class="hljs-keyword">struct</span> drm_device *dev, <span class="hljs-keyword">struct</span> drm_atomic_state *a, <span class="hljs-type">bool</span> async); <span class="hljs-comment">//commit an new atomic state</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_atomic_state</span> *(*<span class="hljs-title">atomic_state_alloc</span>)(<span class="hljs-keyword">struct</span> <span class="hljs-title">drm_device</span> *<span class="hljs-title">dev</span>);</span> <span class="hljs-comment">//alloc an new atomic state</span><br>	<span class="hljs-type">void</span> (*atomic_state_clear)(<span class="hljs-keyword">struct</span> drm_atomic_state *state);  <span class="hljs-comment">//clear the atomic state</span><br>	<span class="hljs-type">void</span> (*atomic_state_free)(<span class="hljs-keyword">struct</span> drm_atomic_state *state);   <span class="hljs-comment">//free the atomic state</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<h4 id="4-struct-drm-mode-config-funcs-rockchip-drm-mode-config-funcs"><a href="#4-struct-drm-mode-config-funcs-rockchip-drm-mode-config-funcs" class="headerlink" title="(4) struct drm_mode_config_funcs rockchip_drm_mode_config_funcs"></a>(4) struct drm_mode_config_funcs rockchip_drm_mode_config_funcs</h4><blockquote>
+<p>rk实现了以下四个函数，其中atomic_check使用的drm框架提供的atomic_helper函数</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mode_config_funcs</span> <span class="hljs-title">rockchip_drm_mode_config_funcs</span> =</span> &#123;<br>	.fb_create = rockchip_user_fb_create,<br>	.output_poll_changed = rockchip_drm_output_poll_changed,<br>	.<span class="hljs-type">atomic_check</span> = drm_atomic_helper_check,<br>	.<span class="hljs-type">atomic_commit</span> = rockchip_drm_atomic_commit,<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="3-3-核心函数"><a href="#3-3-核心函数" class="headerlink" title="3.3 核心函数"></a>3.3 核心函数</h3><h4 id="1-rockchip-drm-mode-config-init"><a href="#1-rockchip-drm-mode-config-init" class="headerlink" title="(1) rockchip_drm_mode_config_init"></a>(1) rockchip_drm_mode_config_init</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">rockchip_drm_mode_config_init</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> drm_device *dev)</span><br>&#123;<br>	dev-&gt;mode_config.min_width = <span class="hljs-number">0</span>;<br>	dev-&gt;mode_config.min_height = <span class="hljs-number">0</span>;<br>	<span class="hljs-comment">/*</span><br><span class="hljs-comment">	 * set max width and height as default value(4096x4096).</span><br><span class="hljs-comment">	 * this value would be used to check framebuffer size limitation</span><br><span class="hljs-comment">	 * at drm_mode_addfb().</span><br><span class="hljs-comment">	 */</span><br>	dev-&gt;mode_config.max_width = <span class="hljs-number">8192</span>;  <span class="hljs-comment">//为啥double了？？？</span><br>	dev-&gt;mode_config.max_height = <span class="hljs-number">8192</span>;<br>	dev-&gt;mode_config.async_page_flip = <span class="hljs-literal">true</span>;  <span class="hljs-comment">//primary plane是否支持async flip</span><br>	dev-&gt;mode_config.funcs = &amp;rockchip_drm_mode_config_funcs;  <span class="hljs-comment">//mode setting functions 重点！ 数据结构关联3.2(3)</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="2-component-bind-all"><a href="#2-component-bind-all" class="headerlink" title="(2) component_bind_all"></a>(2) component_bind_all</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">component_bind_all</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> device *master_dev, <span class="hljs-type">void</span> *data)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">master</span> *<span class="hljs-title">master</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">component</span> *<span class="hljs-title">c</span>;</span><br>	<span class="hljs-type">int</span> ret = <span class="hljs-number">0</span>;<br>    ...<br>	master = __master_find(master_dev, <span class="hljs-literal">NULL</span>); <br>	...<br>	list_for_each_entry(c, &amp;master-&gt;components, master_node) &#123;<br>		ret = component_bind(c, master, data);   <span class="hljs-comment">//绑定components</span><br>		<span class="hljs-keyword">if</span> (ret)<br>			<span class="hljs-keyword">break</span>;<br>	&#125;<br>	<span class="hljs-keyword">if</span> (ret != <span class="hljs-number">0</span>) &#123;    <span class="hljs-comment">//任一component bind failed，解绑所有bound component</span><br>		list_for_each_entry_continue_reverse(c, &amp;master-&gt;components,<br>						     master_node)<br>			component_unbind(c, master, data);<br>	&#125;<br>	<span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="3-rockchip-attach-connector-property"><a href="#3-rockchip-attach-connector-property" class="headerlink" title="(3) rockchip_attach_connector_property"></a>(3) rockchip_attach_connector_property</h4><blockquote>
+<p>将各个属性 attach到connector-&gt;base-&gt;properties，属性初始值设为100</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">rockchip_attach_connector_property</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> drm_device *drm)</span><br>&#123;<br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_connector</span> *<span class="hljs-title">connector</span>;</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">drm_mode_config</span> *<span class="hljs-title">conf</span> =</span> &amp;drm-&gt;mode_config;<br>    ...<br>	drm_for_each_connector(connector, drm) &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> ROCKCHIP_PROP_ATTACH(prop, v) \</span><br><span class="hljs-meta">	drm_object_attach_property(&amp;connector-&gt;base, prop, v)</span><br><br>		ROCKCHIP_PROP_ATTACH(conf-&gt;tv_brightness_property, <span class="hljs-number">100</span>);<br>		ROCKCHIP_PROP_ATTACH(conf-&gt;tv_contrast_property, <span class="hljs-number">100</span>);<br>		ROCKCHIP_PROP_ATTACH(conf-&gt;tv_saturation_property, <span class="hljs-number">100</span>);<br>		ROCKCHIP_PROP_ATTACH(conf-&gt;tv_hue_property, <span class="hljs-number">100</span>);<br>	&#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="4-component-device初始化"><a href="#4-component-device初始化" class="headerlink" title="4 component device初始化"></a>4 component device初始化</h2>
+
+  
+
+</article>
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       Hector > 保持好奇-保持热爱 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
